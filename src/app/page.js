@@ -1,95 +1,71 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import { useShopDetails } from "@/components/ShopDetailsContext";
+import { useState } from "react";
+
+const Home = () => {
+  const [chosenProduct, setChosenProduct] = useState(null);
+  const [productData, setProductData] = useState(null);
+  const { shopDetails } = useShopDetails();
+
+  const selectProduct = async () => {
+    window?.analytics?.track("Button Click", {
+      button: "Select Product",
+      page: "Dashboard",
+    });
+
+    const products = await shopify.resourcePicker({
+      type: "product",
+      limit: 1,
+    });
+    if (!products?.[0]) {
+      return;
+    }
+
+    setChosenProduct(products[0]);
+
+    const res = await fetch("shopify:admin/api/graphql.json", {
+      method: "POST",
+      body: JSON.stringify({
+        query: `
+        query GetProduct($id: ID!) {
+          product(id: $id) {
+            title
+            description
+            media (first: 1) {
+              edges {
+                node {
+                  ... on MediaImage {
+                    id
+                    alt
+                    image {
+                      url
+                      width
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        `,
+        variables: { id: products[0].id },
+      }),
+    });
+    const { data } = await res.json();
+    setProductData(data);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div>
+      <h1>FileJar</h1>
+      <p>
+        <strong>Chosen Product:</strong> {chosenProduct?.title ?? <button onClick={selectProduct}>Select Product</button>}
+      </p>
+      {productData && <pre>{JSON.stringify(productData, null, 2)}</pre>}
+      {shopDetails && <pre>{JSON.stringify(shopDetails, null, 2)}</pre>}
     </div>
   );
-}
+};
+
+export default Home;
