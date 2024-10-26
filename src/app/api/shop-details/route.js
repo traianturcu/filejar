@@ -1,4 +1,4 @@
-import { getShopDetails } from "@/lib/shop";
+import { getShop } from "@/lib/shop";
 import crypto from "crypto";
 
 export const revalidate = 0;
@@ -19,11 +19,13 @@ export const GET = async (request) => {
       throw new Error("Shop header is missing");
     }
 
-    const details = await getShopDetails(shop);
+    const data = await getShop(shop);
 
-    if (!details) {
+    if (!data.details) {
       throw new Error("Shop details not found");
     }
+
+    const details = data.details;
 
     details.intercom_user_hash = calc_intercom_user_hash(shop);
 

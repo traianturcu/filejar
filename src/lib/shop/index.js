@@ -1,2 +1,3 @@
-export * from "./verifyShopDetails";
-export * from "./getShopDetails";
+export * from "./updateShopDetails";
+export * from "./getShop";
+export * from "./updateImportantEmail";
