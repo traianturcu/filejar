@@ -4,6 +4,7 @@ import AppInit from "@/components/AppInit";
 import ShopDetailsProvider from "@/components/ShopDetailsContext";
 import Intercom from "@/components/Intercom";
 import Segment from "@/components/Segment";
+import Providers from "@/components/Providers";
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME,
@@ -19,13 +20,13 @@ export default function RootLayout({ children }) {
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
         <body>
-          <ShopDetailsProvider>
+          <Providers>
             {children}
             <AppInit />
             <Intercom />
             <Segment />
             <NavMenu />
-          </ShopDetailsProvider>
+          </Providers>
         </body>
       </head>
     </html>

@@ -2,6 +2,7 @@
 
 import { useShopDetails } from "@/components/ShopDetailsContext";
 import { useState } from "react";
+import { BlockStack, Button, Card, Layout, Page, Text } from "@shopify/polaris";
 
 const Home = () => {
   const [chosenProduct, setChosenProduct] = useState(null);
@@ -57,14 +58,42 @@ const Home = () => {
   };
 
   return (
-    <div>
-      <h1>{process.env.NEXT_PUBLIC_APP_NAME}</h1>
-      <p>
-        <strong>Chosen Product:</strong> {chosenProduct?.title ?? <button onClick={selectProduct}>Select Product</button>}
-      </p>
-      {productData && <pre>{JSON.stringify(productData, null, 2)}</pre>}
-      {shopDetails && <pre>{JSON.stringify(shopDetails, null, 2)}</pre>}
-    </div>
+    <Page title={process.env.NEXT_PUBLIC_APP_NAME}>
+      <Layout>
+        <Layout.Section variant="oneHalf">
+          <Card roundedAbove="sm">
+            <BlockStack
+              gap="400"
+              align="center"
+              inlineAlign="stretch"
+            >
+              <Text
+                as="p"
+                variant="bodyMd"
+                fontWeight="semibold"
+              >
+                Chosen Product:
+              </Text>
+              {chosenProduct && (
+                <Text
+                  as="p"
+                  variant="bodyMd"
+                >
+                  {chosenProduct.title}
+                </Text>
+              )}
+              <Button
+                variant="primary"
+                onClick={selectProduct}
+              >
+                Select Product
+              </Button>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+        <Layout.Section variant="oneHalf">{productData && <pre>{JSON.stringify(productData, null, 2)}</pre>}</Layout.Section>
+      </Layout>
+    </Page>
   );
 };
 

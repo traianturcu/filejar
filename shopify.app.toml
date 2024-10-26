@@ -1,5 +1,3 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "b1b3d94f1ab2e55605a54a00f5e711aa"
 name = "FileJar DEV"
 handle = "filejar-dev"
@@ -15,11 +13,10 @@ direct_api_mode = "offline"
 embedded_app_direct_api_access = true
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_products,write_products"
 
 [auth]
-redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+redirect_urls = []
 
 [webhooks]
 api_version = "2024-10"

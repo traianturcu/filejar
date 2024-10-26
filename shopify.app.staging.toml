@@ -1,20 +1,22 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "ff3aece5bf4701517ca65c31eb69043b"
 name = "FileJar STAGING"
 handle = "filejar-staging"
-application_url = "https://shopify.dev/apps/default-app-home"
+application_url = "https://filejar-git-staging-traian-s-personal-projects.vercel.app"
 embedded = true
 
 [build]
+dev_store_url = "filejar.myshopify.com"
 include_config_on_deploy = true
 
+[access.admin]
+direct_api_mode = "offline"
+embedded_app_direct_api_access = true
+
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+scopes = "read_products,write_products"
 
 [auth]
-redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+redirect_urls = []
 
 [webhooks]
 api_version = "2024-10"

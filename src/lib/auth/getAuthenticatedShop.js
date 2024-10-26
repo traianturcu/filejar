@@ -19,7 +19,7 @@ export const getAuthenticatedShop = async (request) => {
     console.error({
       error,
       request,
-      message: "Error in getAuthenticatedShop",
+      message: "likely a bot accessing an /api endpoint without a session token (getAuthenticatedShop)",
     });
     return null;
   }

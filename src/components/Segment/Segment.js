@@ -82,7 +82,7 @@ const Segment = () => {
         }
     })();
 
-    window.analytics.identify(
+    window?.analytics?.identify(
       shopDetails.myshopifyDomain,
       {
         email: shopDetails.email,

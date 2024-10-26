@@ -8,11 +8,15 @@
     "start": "next start",
     "lint": "next lint",
     "shopify": "shopify",
-    "ngrok": "ngrok http --domain=filejar.ngrok.app 3000"
+    "ngrok": "ngrok http --domain=filejar.ngrok.app 3000",
+    "app:use": "shopify app config use",
+    "app:deploy": "shopify app deploy",
+    "app:info": "shopify app info"
   },
   "dependencies": {
     "@segment/analytics-node": "^2.2.0",
     "@shopify/app-bridge-react": "^4.1.5",
+    "@shopify/polaris": "^13.9.0",
     "@supabase/supabase-js": "^2.45.6",
     "jose": "^5.9.6",
     "next": "14.2.16",
