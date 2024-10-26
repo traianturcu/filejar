@@ -58,7 +58,7 @@ const Home = () => {
 
   return (
     <div>
-      <h1>FileJar</h1>
+      <h1>{process.env.NEXT_PUBLIC_APP_NAME}</h1>
       <p>
         <strong>Chosen Product:</strong> {chosenProduct?.title ?? <button onClick={selectProduct}>Select Product</button>}
       </p>
