@@ -9,7 +9,11 @@ export const getAuthenticatedShop = async (request) => {
     const token = request?.headers?.get("authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new Error("Token is missing");
+      // throw new Error("Token is missing");
+      // do not throw error, just return null
+      // because this can get triggered by Shopify bots visiting the URL without a token
+      // avoid logalert
+      return null;
     }
 
     const { payload } = await jose.jwtVerify(token, jwtConfig.secret);
@@ -19,7 +23,7 @@ export const getAuthenticatedShop = async (request) => {
     console.error({
       error,
       request,
-      message: "likely a bot accessing an /api endpoint without a session token (getAuthenticatedShop)",
+      message: "error in getAuthenticatedShop",
     });
     return null;
   }
