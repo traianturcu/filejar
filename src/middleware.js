@@ -37,17 +37,47 @@ export const middleware = async (request) => {
           status: 401,
         }
       );
+    } else if (pathname.startsWith("/api/admin")) {
+      //block admin requests if not authorized
+      const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
+      if (!adminShops.includes(shop)) {
+        return Response.json(
+          {
+            success: false,
+            message: "Unauthorized admin access",
+          },
+          {
+            status: 401,
+          }
+        );
+      }
+    } else {
+      requestHeaders.set("X-Shop", shop);
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
     }
-
-    requestHeaders.set("X-Shop", shop);
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
   } else {
     // Non-API requests
     const shop = request?.nextUrl?.searchParams?.get("shop") ?? "*.myshopify.com";
+
+    // block admin requests if not authorized
+    if (pathname.startsWith("/admin")) {
+      const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
+      if (!adminShops.includes(shop)) {
+        return Response.json(
+          {
+            success: false,
+            message: "Unauthorized admin access",
+          },
+          {
+            status: 401,
+          }
+        );
+      }
+    }
 
     const res = NextResponse.next();
     res.headers.set("Content-Security-Policy", `frame-ancestors https://${shop} https://admin.shopify.com`);
