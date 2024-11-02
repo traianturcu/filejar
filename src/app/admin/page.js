@@ -1,7 +1,8 @@
 "use client";
 
-import { BlockStack, Button, Card, IndexTable, InlineStack, Layout, Page, TextField } from "@shopify/polaris";
+import { BlockStack, Button, Card, IndexTable, InlineStack, Layout, Page, Text, TextField } from "@shopify/polaris";
 import { useState, useEffect } from "react";
+import { isLocalStorageAvailable } from "@/lib/client/admin";
 
 const headings = [
   { title: "Shop ID" },
@@ -15,8 +16,36 @@ const headings = [
 const AdminPage = () => {
   const [rows, setRows] = useState([]);
   const [queryValue, setQueryValue] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [impersonating, setImpersonating] = useState(false);
+
+  useEffect(() => {
+    if (isLocalStorageAvailable()) {
+      const impersonate = localStorage?.getItem("impersonate");
+      if (impersonate) {
+        setImpersonating(true);
+      }
+    }
+  }, []);
+
+  const impersonate = (shop) => {
+    if (!isLocalStorageAvailable()) return;
+
+    localStorage.setItem("impersonate", shop);
+    setImpersonating(true);
+    window.location.reload();
+  };
+
+  const stopImpersonating = () => {
+    if (!isLocalStorageAvailable()) return;
+    localStorage.removeItem("impersonate");
+    setImpersonating(false);
+    window.location.reload();
+  };
 
   const searchShops = async (query) => {
+    setLoading(true);
+
     const data = await fetch("/api/admin/shops", {
       method: "POST",
       headers: {
@@ -27,6 +56,7 @@ const AdminPage = () => {
 
     if (!data.ok) {
       setRows([]);
+      setLoading(false);
       return;
     }
 
@@ -37,14 +67,20 @@ const AdminPage = () => {
     } else {
       setRows([]);
     }
+
+    setLoading(false);
   };
 
-  const handleSearch = () => {
-    searchShops(queryValue);
+  const handleSearch = async () => {
+    await searchShops(queryValue);
   };
 
   useEffect(() => {
-    handleSearch();
+    const runEffect = async () => {
+      await searchShops();
+    };
+
+    runEffect();
   }, []);
 
   const rowMarkup =
@@ -60,6 +96,9 @@ const AdminPage = () => {
             <Button
               variant="plain"
               size="slim"
+              onClick={() => {
+                impersonate(row.myshopifyDomain);
+              }}
             >
               Impersonate
             </Button>
@@ -67,6 +106,34 @@ const AdminPage = () => {
         </IndexTable.Row>
       );
     }) ?? [];
+
+  if (impersonating && isLocalStorageAvailable()) {
+    return (
+      <Page title="Impersonating Shop">
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="500">
+                <Text
+                  fontWeight="bold"
+                  as="p"
+                >
+                  {localStorage.getItem("impersonate")}
+                </Text>
+                <Button
+                  variant="primary"
+                  tone="critical"
+                  onClick={stopImpersonating}
+                >
+                  Stop Impersonating
+                </Button>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    );
+  }
 
   return (
     <Page title="Admin Area">
@@ -92,6 +159,7 @@ const AdminPage = () => {
                 headings={headings}
                 itemCount={rows.length}
                 selectable={false}
+                loading={loading}
               >
                 {rowMarkup}
               </IndexTable>

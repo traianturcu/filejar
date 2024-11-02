@@ -18,13 +18,9 @@ export const GET = async (request) => {
 
     const shop_data = await getShop(shop);
 
-    if (!shop_data) {
-      throw new Error("Shop not found in database");
-    }
-
-    let access_token = shop_data.access_token;
-    let details = shop_data.details;
-    let email_important = shop_data.email_important;
+    let access_token = shop_data?.access_token;
+    let details = shop_data?.details;
+    let email_important = shop_data?.email_important;
 
     if (!access_token) {
       const new_access_token = await updateAccessToken(shop, sessionToken);

@@ -1,13 +1,18 @@
 "use client";
 
 import { useShopDetails } from "@/components/ShopDetailsContext";
+import { isLocalStorageAvailable } from "@/lib/client/admin";
 import { useEffect } from "react";
 
 const Intercom = () => {
   const { shopDetails } = useShopDetails();
 
   useEffect(() => {
-    if (!shopDetails?.intercom_user_hash) {
+    if (!shopDetails?.intercom_user_hash || typeof window === "undefined") {
+      return;
+    }
+
+    if (isLocalStorageAvailable() && localStorage.getItem("impersonate")) {
       return;
     }
 

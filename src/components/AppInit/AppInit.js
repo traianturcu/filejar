@@ -16,7 +16,7 @@ const AppInit = () => {
       const res = await fetch("/api/init");
       const { success, message, action } = await res.json();
 
-      if (action === "welcome" && pathname !== "/welcome") {
+      if (action === "welcome" && pathname !== "/welcome" && pathname !== "/admin") {
         router.push("/welcome");
       } else if (!success) {
         console.error(message);

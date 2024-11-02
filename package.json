@@ -11,7 +11,8 @@
     "ngrok": "ngrok http --domain=filejar.ngrok.app 3000",
     "app:use": "shopify app config use",
     "app:deploy": "shopify app deploy",
-    "app:info": "shopify app info"
+    "app:info": "shopify app info",
+    "app:dev": "shopify app dev"
   },
   "dependencies": {
     "@segment/analytics-node": "^2.2.0",

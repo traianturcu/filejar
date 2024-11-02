@@ -23,10 +23,15 @@ export const config = {
 export const middleware = async (request) => {
   const pathname = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
+  const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
 
   if (pathname.startsWith("/api")) {
     // API requests
     const shop = await getAuthenticatedShop(request);
+    let xshop = shop;
+    if (request?.headers?.get("x-impersonate") && adminShops.includes(shop)) {
+      xshop = request.headers.get("x-impersonate");
+    }
     if (!shop) {
       return Response.json(
         {
@@ -52,7 +57,7 @@ export const middleware = async (request) => {
         );
       }
     } else {
-      requestHeaders.set("X-Shop", shop);
+      requestHeaders.set("X-Shop", xshop);
       return NextResponse.next({
         request: {
           headers: requestHeaders,
@@ -65,7 +70,6 @@ export const middleware = async (request) => {
 
     // block admin requests if not authorized
     if (pathname.startsWith("/admin")) {
-      const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
       if (!adminShops.includes(shop)) {
         return Response.json(
           {

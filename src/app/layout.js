@@ -1,10 +1,10 @@
 import NavMenu from "@/components/NavMenu";
 import "./globals.css";
 import AppInit from "@/components/AppInit";
-import ShopDetailsProvider from "@/components/ShopDetailsContext";
 import Intercom from "@/components/Intercom";
 import Segment from "@/components/Segment";
 import Providers from "@/components/Providers";
+import AdminScript from "@/components/AdminScript";
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME,
@@ -26,6 +26,7 @@ export default function RootLayout({ children }) {
             <Intercom />
             <Segment />
             <NavMenu />
+            <AdminScript />
           </Providers>
         </body>
       </head>

@@ -29,6 +29,9 @@ export const GET = async (request) => {
 
     details.intercom_user_hash = calc_intercom_user_hash(shop);
 
+    const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
+    details.is_admin = adminShops.includes(shop);
+
     return Response.json({
       success: true,
       details,
