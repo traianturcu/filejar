@@ -11,7 +11,7 @@ export const updateAccessToken = async (shop, sessionToken) => {
       throw new Error("Failed to exchange token");
     }
 
-    const { error } = await supabase.from("shop").upsert({ id: shop, access_token }, { onConflict: ["id"] });
+    const { error } = await supabase.from("shop").upsert({ id: shop, access_token, installed: true }, { onConflict: ["id"] });
 
     if (error) {
       throw new Error("Error upserting access token: " + error.message);
