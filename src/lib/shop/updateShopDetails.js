@@ -11,7 +11,9 @@ export const updateShopDetails = async (shop, access_token) => {
       throw new Error("Failed to obtain shop details from Shopify API");
     }
 
-    const { error } = await supabase.from("shop").upsert({ id: shop, details }, { onConflict: ["id"] });
+    const last_update = new Date().toISOString();
+
+    const { error } = await supabase.from("shop").upsert({ id: shop, details, last_update }, { onConflict: ["id"] });
 
     if (error) {
       throw new Error("Error upserting shop details: " + error.message);

@@ -25,7 +25,21 @@ export const middleware = async (request) => {
   const requestHeaders = new Headers(request.headers);
   const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
 
-  if (pathname.startsWith("/api")) {
+  if (pathname.startsWith("/api/cron")) {
+    if (request?.headers?.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+      return Response.json(
+        {
+          success: false,
+          message: "Unauthorized access",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    return NextResponse.next();
+  } else if (pathname.startsWith("/api")) {
     // API requests
     const shop = await getAuthenticatedShop(request);
     let xshop = shop;
