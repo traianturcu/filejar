@@ -28,6 +28,7 @@ const NavMenu = () => {
       >
         Home
       </Link>
+      <Link href="/bulk">Bulk</Link>
       <Link href="/billing">Billing</Link>
       <Link href="/support">Support</Link>
       {!!shopDetails?.is_admin && <a href="/admin">Admin</a>}

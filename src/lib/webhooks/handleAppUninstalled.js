@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { updateBillingPlan } from "@/lib/billing";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -9,6 +10,7 @@ export const handleAppUninstalled = async (shop) => {
 
   try {
     const { error } = await supabase.from("shop").update({ access_token: null, installed: false }).eq("id", shop);
+    await updateBillingPlan(shop, "free");
     if (error) {
       throw new Error(error.message);
     }

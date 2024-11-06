@@ -31,6 +31,10 @@ export const GET = async (request) => {
 
     const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
     details.is_admin = adminShops.includes(shop);
+    details.billing_plan = data.billing_plan;
+    details.billing_plan_start = data.billing_plan_start;
+    details.billing_days_used = data.billing_days_used;
+    details.onboarding = data.onboarding;
 
     return Response.json({
       success: true,

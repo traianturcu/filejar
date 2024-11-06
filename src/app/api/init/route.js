@@ -45,8 +45,6 @@ export const GET = async (request) => {
       action = "welcome";
     }
 
-    // TODO: webhook subscriptions should be performed declaratively
-
     return Response.json({
       success: true,
       action,
