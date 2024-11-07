@@ -6,6 +6,7 @@ export const createCharge = async (shop, plan) => {
     const shop_data = await getShop(shop);
     const access_token = shop_data?.access_token;
     const details = shop_data?.details;
+    const offers = shop_data?.offers?.find((offer) => offer.id === plan.id);
 
     if (!plan.amount) {
       // free plan - cancel active charge if any
@@ -29,7 +30,23 @@ export const createCharge = async (shop, plan) => {
     }
 
     // TODO: implement ability to provide discounts
-    const discount = null;
+    const discount = {};
+
+    if (offers?.discountPercentage) {
+      if (offers?.durationLimitInIntervals) {
+        discount.durationLimitInIntervals = parseInt(offers.durationLimitInIntervals);
+      }
+      discount.value = {
+        percentage: parseFloat(offers.discountPercentage) / 100,
+      };
+    } else if (offers?.discountAmount) {
+      if (offers?.durationLimitInIntervals) {
+        discount.durationLimitInIntervals = parseInt(offers.durationLimitInIntervals);
+      }
+      discount.value = {
+        amount: offers.discountAmount,
+      };
+    }
 
     // subtract the used billing days from the default plan trial days
     let daysPassed = 0;
@@ -41,7 +58,8 @@ export const createCharge = async (shop, plan) => {
     }
 
     const billing_days_used = (shop_data?.billing_days_used ?? 0) + Math.max(daysPassed, 0);
-    const trialDays = Math.max((plan.trialDays || 0) - billing_days_used, 0);
+    const extendedDays = offers?.extendedFreeTrial ? parseInt(offers.extendedFreeTrial) : 0;
+    const trialDays = Math.max(Math.max(plan.trialDays || 0, extendedDays) - billing_days_used, 0);
 
     const url = `https://${shop}/admin/api/${process.env.SHOPIFY_API_VERSION}/graphql.json`;
     const query = `mutation AppSubscriptionCreate($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $trialDays: Int, $test: Boolean){

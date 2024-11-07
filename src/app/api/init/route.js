@@ -36,8 +36,7 @@ export const GET = async (request) => {
       if (!success) {
         throw new Error(`Failed to update shop details for ${shop}`);
       }
-      // TODO: setup a cron job to re-fetch the shop details every 24 hours
-      // AND use the shop update webhook to update the details in real-time
+      // TODO: use the shop update webhook to update the details in real-time
     }
 
     let action = null;

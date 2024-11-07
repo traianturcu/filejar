@@ -1,7 +1,7 @@
 "use client";
 
 import SegmentTrack from "@/components/SegmentTrack";
-import { BlockStack, Card, InlineStack, Layout, Page, Text } from "@shopify/polaris";
+import { BlockStack, Card, InlineGrid, InlineStack, Layout, Page, Text } from "@shopify/polaris";
 import { billingPlans } from "@/constants/billingPlans";
 import BillingPlanCard from "@/components/BillingPlanCard";
 import { useShopDetails } from "@/components/ShopDetailsContext";
@@ -33,10 +33,9 @@ const BillingPage = () => {
                 </Text>
               </Card>
             )}
-            <InlineStack
-              gap="500"
-              align="space-between"
-              blockAlign="stretch"
+            <InlineGrid
+              gap="300"
+              columns={{ sm: 1, md: 3 }}
             >
               {billingPlans.map((plan) => (
                 <BillingPlanCard
@@ -45,9 +44,10 @@ const BillingPage = () => {
                   billing_plan={shopDetails?.billing_plan}
                   billing_days_used={shopDetails?.billing_days_used}
                   billing_plan_start={shopDetails?.billing_plan_start}
+                  offers={shopDetails?.offers?.find((offer) => offer.id === plan.id)}
                 />
               ))}
-            </InlineStack>
+            </InlineGrid>
           </BlockStack>
         </Layout.Section>
       </Layout>

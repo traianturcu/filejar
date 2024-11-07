@@ -17,7 +17,7 @@ export const searchShops = async (query) => {
     }
 
     const results = data?.map((shop) => {
-      return { ...shop.details };
+      return { ...shop.details, offers: shop.offers };
     });
 
     return results ?? [];

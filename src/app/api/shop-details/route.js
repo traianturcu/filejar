@@ -35,6 +35,7 @@ export const GET = async (request) => {
     details.billing_plan_start = data.billing_plan_start;
     details.billing_days_used = data.billing_days_used;
     details.onboarding = data.onboarding;
+    details.offers = data.offers;
 
     return Response.json({
       success: true,
