@@ -58,7 +58,7 @@ const FilesPage = () => {
         onHide={finishedUploading}
       >
         <TitleBar title="Add Files">
-          <button onClick={hideUploadModal}>I'm done uploading</button>
+          <button onClick={hideUploadModal}>I&apos;m done uploading</button>
         </TitleBar>
         <Dashboard
           uppy={uppy}

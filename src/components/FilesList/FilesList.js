@@ -75,7 +75,7 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
       setSortValue("created_at-desc");
       setRefresh(false);
     }
-  }, [refresh]);
+  }, [setRefresh, refresh]);
 
   const deleteFiles = async () => {
     setLoading(true);
