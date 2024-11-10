@@ -2,6 +2,8 @@ import { getShop } from "@/lib/shop";
 import * as jose from "jose";
 import { createClient } from "@supabase/supabase-js";
 
+export const dynamic = "force-dynamic";
+
 const jwtConfig = {
   secret: new TextEncoder().encode(process.env.SHOPIFY_API_SECRET_KEY),
 };

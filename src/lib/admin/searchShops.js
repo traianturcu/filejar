@@ -23,7 +23,7 @@ export const searchShops = async (query) => {
     return results ?? [];
   } catch (error) {
     console.error({
-      message: "Failed to search for shops as admin",
+      message: "Error - Failed to search for shops as admin",
       query,
       error,
     });

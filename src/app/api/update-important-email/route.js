@@ -1,5 +1,7 @@
 import { updateImportantEmail } from "@/lib/shop";
 
+export const dynamic = "force-dynamic";
+
 export const POST = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");
@@ -34,7 +36,7 @@ export const POST = async (request) => {
   } catch (error) {
     console.error({
       error,
-      message: "Failed to save important email",
+      message: "Error: Failed to save important email",
     });
     return Response.json(
       {

@@ -1,5 +1,7 @@
 import { getShop } from "@/lib/shop";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");

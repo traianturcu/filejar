@@ -1,6 +1,8 @@
 import { getShop } from "@/lib/shop";
 import crypto from "crypto";
 
+export const dynamic = "force-dynamic";
+
 const calc_intercom_user_hash = (shop) => {
   if (!shop) {
     return null;

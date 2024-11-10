@@ -1,6 +1,8 @@
 import { getShop } from "@/lib/shop";
 import { getActiveCharge, getChargePlan, updateBillingPlan } from "@/lib/billing";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async (request) => {
   try {
     const shop = request?.nextUrl?.searchParams?.get("shop");

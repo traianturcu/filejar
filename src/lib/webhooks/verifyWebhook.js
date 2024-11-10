@@ -28,7 +28,7 @@ export const verifyWebhook = async (request) => {
     };
   } catch (error) {
     console.error({
-      msg: "error verifying webhook",
+      msg: "Error verifying webhook",
       error,
     });
     return {

@@ -1,5 +1,7 @@
 import { searchShops } from "@/lib/admin";
 
+export const dynamic = "force-dynamic";
+
 export const POST = async (request) => {
   try {
     const { query } = await request.json();
@@ -10,7 +12,7 @@ export const POST = async (request) => {
     });
   } catch (error) {
     console.error({
-      message: "Failed to search for shops as admin",
+      message: "Error: Failed to search for shops as admin",
       error,
     });
     return Response(

@@ -1,5 +1,7 @@
 import { verifyWebhook, handleCustomerDataRequest, handleCustomerRedact, handleShopRedact, handleAppUninstalled } from "@/lib/webhooks";
 
+export const dynamic = "force-dynamic";
+
 export const POST = async (request) => {
   try {
     const { valid, topic, body, shop } = await verifyWebhook(request);

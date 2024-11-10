@@ -2,6 +2,8 @@ import { getShop } from "@/lib/shop";
 import { createClient } from "@supabase/supabase-js";
 import { filesPerPage } from "@/constants/files";
 
+export const dynamic = "force-dynamic";
+
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export const GET = async (request) => {

@@ -23,7 +23,7 @@ export const getAuthenticatedShop = async (request) => {
     console.error({
       error,
       request,
-      message: "error in getAuthenticatedShop",
+      message: "Error in getAuthenticatedShop",
     });
     return null;
   }
