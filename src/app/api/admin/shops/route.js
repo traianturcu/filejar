@@ -1,7 +1,5 @@
 import { searchShops } from "@/lib/admin";
 
-export const revalidate = 0;
-
 export const POST = async (request) => {
   try {
     const { query } = await request.json();

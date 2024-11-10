@@ -1,7 +1,5 @@
 import { verifyWebhook, handleCustomerDataRequest, handleCustomerRedact, handleShopRedact, handleAppUninstalled } from "@/lib/webhooks";
 
-export const revalidate = 0;
-
 export const POST = async (request) => {
   try {
     const { valid, topic, body, shop } = await verifyWebhook(request);

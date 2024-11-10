@@ -1,7 +1,5 @@
 import { updateImportantEmail } from "@/lib/shop";
 
-export const revalidate = 0;
-
 export const POST = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");

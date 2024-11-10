@@ -1,8 +1,6 @@
 import { billingPlans } from "@/constants/billingPlans";
 import { createCharge } from "@/lib/billing";
 
-export const revalidate = 0;
-
 export const POST = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");

@@ -1,8 +1,6 @@
 import { getShop } from "@/lib/shop";
 import crypto from "crypto";
 
-export const revalidate = 0;
-
 const calc_intercom_user_hash = (shop) => {
   if (!shop) {
     return null;

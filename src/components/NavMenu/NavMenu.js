@@ -28,6 +28,7 @@ const NavMenu = () => {
       >
         Home
       </Link>
+      <Link href="/files">Files</Link>
       <Link href="/bulk">Bulk</Link>
       <Link href="/billing">Billing</Link>
       <Link href="/support">Support</Link>
