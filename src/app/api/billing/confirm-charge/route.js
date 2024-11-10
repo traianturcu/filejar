@@ -3,8 +3,7 @@ import { getActiveCharge, getChargePlan, updateBillingPlan } from "@/lib/billing
 
 export const GET = async (request) => {
   try {
-    const { searchParams } = new URL(request.url);
-    const shop = searchParams.get("shop");
+    const shop = request?.nextUrl?.searchParams?.get("shop");
 
     if (!shop) {
       throw new Error("Error: Shop is missing");
