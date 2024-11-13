@@ -19,17 +19,17 @@ export default function RootLayout({ children }) {
       <head>
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
-        <body>
-          <Providers>
-            {children}
-            <AppInit />
-            <Intercom />
-            <Segment />
-            <NavMenu />
-            <AdminScript />
-          </Providers>
-        </body>
       </head>
+      <body>
+        <Providers>
+          {children}
+          <AppInit />
+          <Intercom />
+          <Segment />
+          <NavMenu />
+          <AdminScript />
+        </Providers>
+      </body>
     </html>
   );
 }

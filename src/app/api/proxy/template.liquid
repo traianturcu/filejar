@@ -1,0 +1,43 @@
+<style>
+  #filejar-downloads {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #filejar-downloads .card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+</style>
+<script src="##app_url##/proxy.js?shop={{ request.host }}"></script>
+<div id="filejar-downloads">
+  <div class="card">
+    <p>
+      <b>Shop:</b>
+      {{ request.host }}</p>
+    <p>
+      <b>Design Mode:</b>
+      {{ request.design_mode }}</p>
+    <p>
+      <b>Locale:</b>
+      {{ request.locale.iso_code }}</p>
+    <p>
+      <b>Page Type:</b>
+      {{ request.page_type }}</p>
+    <p>
+      <b>Path:</b>
+      {{ request.path }}</p>
+    <p>
+      <b>Origin:</b>
+      {{ request.origin }}</p>
+    <p>
+      <b>Cart URL:</b>
+      {{ routes.cart_url }}</p>
+    <p>
+      <b>Add To Cart URL:</b>
+      {{ routes.cart_add_url }}</p>
+    </p>
+  </div>
+</div>

@@ -4,7 +4,7 @@ import { getAuthenticatedShop } from "@/lib/auth";
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge).*)",
+      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge|api/proxy).*)",
       missing: [
         {
           type: "header",
@@ -25,7 +25,11 @@ export const middleware = async (request) => {
   const requestHeaders = new Headers(request.headers);
   const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
 
-  if (pathname.startsWith("/api/cron")) {
+  if (pathname.startsWith("/proxy")) {
+    const res = NextResponse.next();
+    res.headers.set("Content-Type", `application/liquid`);
+    return res;
+  } else if (pathname.startsWith("/api/cron")) {
     if (request?.headers?.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
       return Response.json(
         {

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "shopify": "shopify",
-    "ngrok": "ngrok http --domain=filejar.ngrok.app 3000",
+    "ngrok": "ngrok http --domain=filejar.ngrok.dev 3000",
     "app:use": "shopify app config use",
     "app:deploy": "shopify app deploy",
     "app:info": "shopify app info",
