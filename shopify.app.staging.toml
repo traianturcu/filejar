@@ -21,10 +21,15 @@ redirect_urls = []
 [webhooks]
 api_version = "2024-10"
 
-[pos]
-embedded = false
-
 [[webhooks.subscriptions]]
 topics = ["app/uninstalled"]
 compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
 uri = "https://filejar-git-staging-traian-s-personal-projects.vercel.app/api/webhooks"
+
+[app_proxy]
+url = "https://filejar-git-staging-traian-s-personal-projects.vercel.app/api/proxy"
+subpath = "filejar-staging"
+prefix = "apps"
+
+[pos]
+embedded = false

@@ -1,5 +1,3 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-
 client_id = "db8ae39bef889270d9cfd2d8349ff8fe"
 name = "FileJar"
 handle = "filejar"
@@ -15,7 +13,6 @@ direct_api_mode = "offline"
 embedded_app_direct_api_access = true
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_products,write_products"
 
 [auth]
@@ -24,10 +21,15 @@ redirect_urls = [ ]
 [webhooks]
 api_version = "2024-10"
 
-[pos]
-embedded = false
-
 [[webhooks.subscriptions]]
 topics = ["app/uninstalled"]
 compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
 uri = "https://app.filejar.com/api/webhooks"
+
+[app_proxy]
+url = "https://app.filejar.com/api/proxy"
+subpath = "filejar"
+prefix = "apps"
+
+[pos]
+embedded = false
