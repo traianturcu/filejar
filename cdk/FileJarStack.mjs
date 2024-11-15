@@ -88,7 +88,7 @@ export class FileJarStack extends Stack {
           const handler = subscriber.handler.replace(/^\//, "");
           const url = `${appUrl}/${handler}`;
           topic.addSubscription(
-            new ApiSubscription(url, {
+            new UrlSubscription(url, {
               protocol: SubscriptionProtocol.HTTPS,
             })
           );
