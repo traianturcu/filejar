@@ -21,10 +21,10 @@ redirect_urls = [ ]
 [webhooks]
 api_version = "2024-10"
 
-[[webhooks.subscriptions]]
-topics = ["app/uninstalled", "orders/create"]
-compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
-uri = "https://app.filejar.com/api/webhooks"
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled", "orders/create" ]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "https://app.filejar.com/api/webhooks"
 
 [app_proxy]
 url = "https://app.filejar.com/api/proxy"
