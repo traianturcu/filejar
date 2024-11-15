@@ -1,4 +1,4 @@
-import { events } from "@/constants/pubsub.js";
+import { events } from "@/constants/pubsub.mjs";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 export const publish = async (event, payload) => {
