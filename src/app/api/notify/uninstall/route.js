@@ -5,30 +5,14 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 export const POST = async (req) => {
   try {
     const body = await req.json();
-
-    if (!body) {
-      throw new Error("No body found");
+    const payload = await parsePayload(body);
+    if (!payload) {
+      throw new Error("Invalid payload");
     }
 
-    const { Message, Type, SubscribeURL } = body;
-
-    // check if the message is a subscription confirmation
-    if (Type === "SubscriptionConfirmation") {
-      console("confirming subscription");
-      await fetch(SubscribeURL);
-      return Response.json(
-        {
-          success: true,
-          message: "Subscription confirmed",
-        },
-        { status: 200 }
-      );
-    }
-
-    const { shop, secret } = JSON.parse(Message);
-
-    if (secret !== process.env.SNS_SECRET) {
-      throw new Error("Invalid secret");
+    const { shop } = payload;
+    if (!shop) {
+      throw new Error("Shop not found");
     }
 
     const twilioResponse = await client.messages.create({
