@@ -15,6 +15,7 @@
     "app:dev": "shopify app dev"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.693.0",
     "@segment/analytics-node": "^2.2.0",
     "@shopify/app-bridge-react": "^4.1.5",
     "@shopify/polaris": "^13.9.0",
@@ -33,6 +34,7 @@
     "next": "14.2.16",
     "react": "^18",
     "react-dom": "^18",
+    "twilio": "^5.3.6",
     "uuid": "^11.0.2"
   },
   "devDependencies": {

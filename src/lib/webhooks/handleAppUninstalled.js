@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { updateBillingPlan } from "@/lib/billing";
+import { publish } from "@/constants/publish";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -14,6 +15,8 @@ export const handleAppUninstalled = async (shop) => {
     if (error) {
       throw new Error(error.message);
     }
+
+    await publish("UNINSTALL_APP", { shop, secret: process.env.SNS_SECRET });
   } catch (error) {
     console.error({
       message: "Error handling app uninstalled.",

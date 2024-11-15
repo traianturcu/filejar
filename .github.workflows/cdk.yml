@@ -1,0 +1,46 @@
+name: cdk
+
+on: push
+
+jobs:
+  cdk:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/production'
+    defaults:
+      run:
+        working-directory: cdk
+    env:
+      BRANCH: ${{ github.ref_name }}
+      APP_NAME: ${{ secrets.APP_NAME }}
+      APP_URL: ${{ (github.ref == 'refs/heads/staging' && secrets.APP_URL_STAGING) || (github.ref == 'refs/heads/production' && secrets.APP_URL_PRODUCTION)}}
+      TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+      TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_TO_PHONE_NUMBER: ${{ secrets.TWILIO_TO_PHONE_NUMBER }}
+      TWILIO_FROM_PHONE_NUMBER: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
+      SNS_SECRET: ${{ secrets.SNS_SECRET }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          node-version: 20"
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Install CDK
+        run: npm install -g aws-cdk
+      - name: Install dependencies for each lambda function
+        run: find ../lambda/* -maxdepth 2 -name package.json -execdir npm ci \;
+      - name: CDK SYNTH
+        run: cdk synth
+      - name: CDK BOOTSTRAP
+        run: cdk bootstrap --require-approval never
+      - name: CDK DEPLOY
+        run: cdk deploy --require-approval never
