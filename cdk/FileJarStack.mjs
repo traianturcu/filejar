@@ -3,7 +3,7 @@ import { Function, Runtime, Code, FunctionUrlAuthType } from "aws-cdk-lib/aws-la
 import { Topic, TopicPolicy, SubscriptionProtocol } from "aws-cdk-lib/aws-sns";
 import { events } from "../src/constants/pubsub.mjs";
 import { LambdaSubscription, UrlSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
-import { PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement, ServicePrincipal, ArnPrincipal } from "aws-cdk-lib/aws-iam";
 
 export class FileJarStack extends Stack {
   constructor(scope, id, props) {
@@ -58,7 +58,7 @@ export class FileJarStack extends Stack {
       topicPolicy.document.addStatements(
         new PolicyStatement({
           actions: ["sns:Publish"],
-          principals: [new AnyPrincipal("*")],
+          principals: [new ArnPrincipal("*")],
           resources: [topic.topicArn],
         })
       );
