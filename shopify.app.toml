@@ -19,13 +19,13 @@ embedded_app_direct_api_access = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,write_products"
+scopes = "read_products,write_products,read_orders"
 
 [webhooks]
 api_version = "2024-10"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
+  topics = [ "app/uninstalled", "orders/create" ]
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
   uri = "https://filejar.ngrok.dev/api/webhooks"
 

@@ -28,10 +28,11 @@ const NavMenu = () => {
       >
         Home
       </Link>
+      <Link href="/products">Products</Link>
       <Link href="/files">Files</Link>
-      <Link href="/bulk">Bulk</Link>
+      <Link href="/orders">Orders</Link>
       <Link href="/billing">Billing</Link>
-      <Link href="/support">Support</Link>
+      <Link href="/settings">Settings</Link>
       {!!shopDetails?.is_admin && <a href="/admin">Admin</a>}
       {!!impersonating && <a href="/admin">Impersonating</a>}
     </ui-nav-menu>

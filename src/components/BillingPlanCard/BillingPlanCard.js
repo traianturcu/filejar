@@ -57,7 +57,14 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
   }
 
   return (
-    <div style={{ flex: 1 }}>
+    <div
+      style={{
+        flex: 1,
+        ...(plan.recommended && {
+          filter: "drop-shadow(0 0 20px rgba(156, 106, 222, 0.8))",
+        }),
+      }}
+    >
       <Card roundedAbove="sm">
         <BlockStack gap="500">
           <InlineStack
