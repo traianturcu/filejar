@@ -4,8 +4,8 @@ import { Topic, TopicPolicy, LambdaSubscription } from "aws-cdk-lib/aws-sns";
 import { events } from "../src/constants/pubsub.mjs";
 
 export class FileJarStack extends Stack {
-  constructor(app, id, props) {
-    super(app, id, props);
+  constructor(scope, id, props) {
+    super(scope, id, props);
 
     const env = process.env.BRANCH ?? "dev";
     const app = process.env.APP_NAME;
