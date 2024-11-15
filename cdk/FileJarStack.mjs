@@ -1,7 +1,9 @@
 import { Stack, Duration, RemovalPolicy } from "aws-cdk-lib";
 import { Function, Runtime, Code, FunctionUrlAuthType } from "aws-cdk-lib/aws-lambda";
-import { Topic, TopicPolicy, LambdaSubscription } from "aws-cdk-lib/aws-sns";
+import { Topic, TopicPolicy, SubscriptionProtocol } from "aws-cdk-lib/aws-sns";
 import { events } from "../src/constants/pubsub.mjs";
+import { LambdaSubscription, UrlSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+import { PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 
 export class FileJarStack extends Stack {
   constructor(scope, id, props) {
