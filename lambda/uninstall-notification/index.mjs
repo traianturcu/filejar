@@ -17,7 +17,7 @@ export const handler = async (event) => {
       const twilioResponse = await client.messages.create({
         to: process.env.TWILIO_TO_PHONE_NUMBER,
         from: process.env.TWILIO_FROM_PHONE_NUMBER,
-        body: `Shopify app uninstalled: ${shop}`,
+        body: `[lambda] ${process.env.APP_NAME}-${process.env.BRANCH} uninstalled: ${shop}`,
       });
 
       return twilioResponse.id;

@@ -19,10 +19,10 @@ export const POST = async (req) => {
     const twilioResponse = await client.messages.create({
       to: process.env.TWILIO_TO_PHONE_NUMBER,
       from: process.env.TWILIO_FROM_PHONE_NUMBER,
-      body: `Filejar was uninstalled by ${shop}`,
+      body: `[API] ${process.env.APP_NAME} was uninstalled by ${shop}`,
     });
 
-    return new Response.json(
+    return Response.json(
       {
         success: true,
         sid: twilioResponse.sid,
