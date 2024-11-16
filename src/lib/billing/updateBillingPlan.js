@@ -24,13 +24,6 @@ export const updateBillingPlan = async (shop, planId) => {
     }
 
     const billing_days_used = (shopData?.billing_days_used ?? 0) + Math.max(daysPassed, 0);
-    console.log({
-      shop,
-      planId,
-      billing_days_used,
-      billing_plan_start,
-      shopData,
-    });
 
     const { error } = await supabase.from("shop").update({ billing_plan: planId, billing_days_used, billing_plan_start }).eq("id", shop);
 

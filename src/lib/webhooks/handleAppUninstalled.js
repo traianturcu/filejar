@@ -17,7 +17,6 @@ export const handleAppUninstalled = async (shop) => {
     }
 
     await publish("UNINSTALL_APP", { shop });
-    console.log(`Published event: UNINSTALL_APP for ${shop}`);
   } catch (error) {
     console.error({
       message: "Error handling app uninstalled.",
