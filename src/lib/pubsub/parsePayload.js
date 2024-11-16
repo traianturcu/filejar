@@ -24,5 +24,3 @@ const parsePayload = async (body) => {
 
   return payload;
 };
-
-export default parsePayload;
