@@ -4,7 +4,7 @@ import { getAuthenticatedShop } from "@/lib/auth";
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge|api/proxy|api/notify/uninstall).*)",
+      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge|api/proxy).*)",
       missing: [
         {
           type: "header",
@@ -25,7 +25,52 @@ export const middleware = async (request) => {
   const requestHeaders = new Headers(request.headers);
   const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
 
-  if (pathname.startsWith("/proxy")) {
+  if (pathname.startsWith("/api/subscriber")) {
+    const body = await request.json();
+    if (!body) {
+      return Response.json(
+        {
+          success: false,
+          message: "No body",
+        },
+        { status: 400 }
+      );
+    }
+    const { Message, Type, SubscribeURL } = body;
+    if (!Message || !Type) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid body",
+        },
+        { status: 400 }
+      );
+    }
+    if (Type === "SubscriptionConfirmation") {
+      if (SubscribeURL) {
+        await fetch(SubscribeURL);
+      }
+      return Response.json(
+        {
+          success: false,
+          message: "Subscription confirmed",
+        },
+        { status: 200 }
+      );
+    }
+    const payload = JSON.parse(Message);
+    if (payload.secret !== process.env.SNS_SECRET) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid secret",
+        },
+        { status: 400 }
+      );
+    }
+    request.body = payload;
+    return NextResponse.next();
+  } else if (pathname.startsWith("/proxy")) {
     const res = NextResponse.next();
     res.headers.set("Content-Type", `application/liquid`);
     return res;

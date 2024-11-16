@@ -1,7 +1,7 @@
 import { Stack, Duration, RemovalPolicy } from "aws-cdk-lib";
 import { Function, Runtime, Code, FunctionUrlAuthType } from "aws-cdk-lib/aws-lambda";
 import { Topic, TopicPolicy, SubscriptionProtocol } from "aws-cdk-lib/aws-sns";
-import { events } from "../src/constants/pubsub.mjs";
+import { events } from "../src/lib/pubsub/events.mjs";
 import { LambdaSubscription, UrlSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 import { PolicyStatement, ServicePrincipal, ArnPrincipal } from "aws-cdk-lib/aws-iam";
 
@@ -16,36 +16,6 @@ export class FileJarStack extends Stack {
     const app = process.env.APP_NAME;
 
     const lambdas = {};
-
-    // lambda function - uninstall notification
-    const uninstallNotificationLambda = new Function(this, `${app}-${env}-uninstall-notification-lambda`, {
-      runtime: Runtime.NODEJS_20_X,
-      handler: "index.handler",
-      code: Code.fromAsset("../lambda/uninstall-notification"),
-      environment: {
-        SNS_SECRET: process.env.SNS_SECRET,
-        TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
-        TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
-        TWILIO_TO_PHONE_NUMBER: process.env.TWILIO_TO_PHONE_NUMBER,
-        TWILIO_FROM_PHONE_NUMBER: process.env.TWILIO_FROM_PHONE_NUMBER,
-        APP_NAME: app,
-        BRANCH: env,
-      },
-      timeout: Duration.seconds(30),
-      memorySize: 1024,
-      removalPolicy: RemovalPolicy.RETAIN,
-    });
-
-    uninstallNotificationLambda.addFunctionUrl({
-      authType: FunctionUrlAuthType.NONE,
-      cors: {
-        allowedOrigins: ["*"],
-        allowedHeaders: ["*"],
-        allowedMethods: ["*"],
-      },
-    });
-
-    lambdas["uninstall-notification"] = uninstallNotificationLambda;
 
     // PUB/SUB System
     // create SNS topic and subscribe lambda functions and URL based on pubsub.mjs

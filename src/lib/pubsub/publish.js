@@ -1,4 +1,4 @@
-import { events } from "@/constants/pubsub.mjs";
+import { events } from "@/lib/pubsub";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 export const publish = async (event, payload) => {
@@ -16,6 +16,8 @@ export const publish = async (event, payload) => {
     });
 
     const topicArn = `arn:aws:sns:${process.env.AWS_REGION}:${process.env.AWS_ACCOUNT_ID}:${process.env.AWS_APP_NAME}-${process.env.ENVIRONMENT}-${event}-topic`;
+
+    payload.secret = process.env.SNS_SECRET;
 
     const params = {
       TopicArn: topicArn,
