@@ -8,6 +8,8 @@ export const handler = async (event) => {
       const message = JSON.parse(record.Sns.Message);
       const { shop, secret } = message;
 
+      console.log({ shop, secret });
+
       if (secret !== process.env.SNS_SECRET) {
         throw new Error("Invalid secret");
       }
