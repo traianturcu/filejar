@@ -5,7 +5,8 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 
 export const POST = async (req) => {
   try {
-    const { shop } = await req.json();
+    const { Message } = await req.json();
+    const { shop } = JSON.parse(Message);
     if (!shop) {
       throw new Error("Shop not found");
     }

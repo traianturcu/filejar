@@ -52,7 +52,7 @@ export const middleware = async (request) => {
       }
       return Response.json(
         {
-          success: false,
+          success: true,
           message: "Subscription confirmed",
         },
         { status: 200 }
@@ -68,7 +68,6 @@ export const middleware = async (request) => {
         { status: 400 }
       );
     }
-    request.body = payload;
     return NextResponse.next();
   } else if (pathname.startsWith("/proxy")) {
     const res = NextResponse.next();
