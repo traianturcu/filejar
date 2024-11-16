@@ -5,14 +5,14 @@ on: push
 jobs:
   cdk:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/production'
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/production' || github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: cdk
     env:
       BRANCH: ${{ github.ref_name }}
       APP_NAME: ${{ secrets.APP_NAME }}
-      APP_URL: ${{ (github.ref == 'refs/heads/staging' && secrets.APP_URL_STAGING) || (github.ref == 'refs/heads/production' && secrets.APP_URL_PRODUCTION)}}
+      APP_URL: ${{ (github.ref == 'refs/heads/staging' && secrets.APP_URL_STAGING) || (github.ref == 'refs/heads/production' && secrets.APP_URL_PRODUCTION) || (github.ref == 'refs/heads/main' && secrets.APP_URL_DEV) }}
       TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
       TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
       TWILIO_TO_PHONE_NUMBER: ${{ secrets.TWILIO_TO_PHONE_NUMBER }}
