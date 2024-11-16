@@ -6,7 +6,10 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 export const POST = async (req) => {
   try {
     const body = await req.json();
-    const payload = await parsePayload(body);
+    const { payload, isConfirmation } = await parsePayload(body);
+    if (isConfirmation) {
+      return Response.json({ success: true, message: "Subscription confirmed" }, { status: 200 });
+    }
     if (!payload) {
       throw new Error("Invalid payload");
     }

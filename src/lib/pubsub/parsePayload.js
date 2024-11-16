@@ -1,12 +1,12 @@
 export const parsePayload = async (body) => {
   if (!body) {
-    return null;
+    return { isConfirmation: null, payload: null };
   }
 
   const { Message, Type, SubscribeURL } = body;
 
   if (!Message || !Type) {
-    return null;
+    return { isConfirmation: null, payload: null };
   }
 
   // check if the message is a subscription confirmation
@@ -15,14 +15,14 @@ export const parsePayload = async (body) => {
     if (SubscribeURL) {
       await fetch(SubscribeURL);
     }
-    return null;
+    return { isConfirmation: true, payload: null };
   }
 
   const payload = JSON.parse(Message);
 
   if (payload.secret !== process.env.SNS_SECRET) {
-    return null;
+    return { isConfirmation: null, payload: null };
   }
 
-  return payload;
+  return { payload, isConfirmation: false };
 };

@@ -28,6 +28,8 @@ export class FileJarStack extends Stack {
         TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
         TWILIO_TO_PHONE_NUMBER: process.env.TWILIO_TO_PHONE_NUMBER,
         TWILIO_FROM_PHONE_NUMBER: process.env.TWILIO_FROM_PHONE_NUMBER,
+        APP_NAME: app,
+        BRANCH: env,
       },
       timeout: Duration.seconds(30),
       memorySize: 1024,
