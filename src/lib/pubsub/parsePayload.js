@@ -1,4 +1,4 @@
-const parsePayload = async (body) => {
+export const parsePayload = async (body) => {
   if (!body) {
     return null;
   }
