@@ -17,6 +17,8 @@ export const publish = async (event, payload) => {
 
     const topicArn = `arn:aws:sns:${process.env.AWS_REGION}:${process.env.AWS_ACCOUNT_ID}:${process.env.AWS_APP_NAME}-${process.env.ENVIRONMENT}-${event}-topic`;
 
+    console.log({ topicArn, payload });
+
     const params = {
       TopicArn: topicArn,
       Message: JSON.stringify(payload),
