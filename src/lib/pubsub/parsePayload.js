@@ -11,7 +11,7 @@ export const parsePayload = async (body) => {
 
   // check if the message is a subscription confirmation
   if (Type === "SubscriptionConfirmation") {
-    console("confirming subscription");
+    console.log("confirming subscription");
     await fetch(SubscribeURL);
     return null;
   }
