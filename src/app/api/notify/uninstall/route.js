@@ -30,7 +30,7 @@ export const POST = async (req) => {
       { status: 200 }
     );
   } catch (error) {
-    console("Error handling twilio uninstall notification", error);
+    console.error("Error handling twilio uninstall notification", error);
     return Response.json(
       {
         success: false,
