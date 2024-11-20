@@ -66,8 +66,11 @@ export const useUppyWithSupabase = ({ bucketName, onComplete, onError }) => {
             }),
             contentType: file.type,
           };
+
+          console.log("file-added", { file });
         })
         .on("complete", (result) => {
+          console.log("complete", { result });
           if (result.successful) {
             onComplete(result);
           } else {
@@ -83,6 +86,10 @@ export const useUppyWithSupabase = ({ bucketName, onComplete, onError }) => {
     };
 
     initUppy();
+
+    return () => {
+      uppy.cancelAll();
+    };
   }, [shopDetails, shopify, uppy, bucketName, onComplete, onError]);
 
   return uppy;

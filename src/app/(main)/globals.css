@@ -68,3 +68,9 @@ h6 {
 #__next {
   isolation: isolate;
 }
+
+/* Polaris Tweaks */
+.Polaris-EmptyState__ImageContainer img {
+  max-width: 250px;
+}
+/* End Polaris Tweaks */

@@ -1,1 +1,1 @@
-export const filesPerPage = 20;
+export const filesPerPage = 10;

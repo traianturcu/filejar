@@ -5,37 +5,8 @@ import { useEffect, useState } from "react";
 import useDebounce from "@/lib/utils/useDebounce";
 import { filesPerPage } from "@/constants/files";
 import { useAppBridge, Modal, TitleBar } from "@shopify/app-bridge-react";
-
-function formatFileSize(bytes) {
-  const units = ["B", "kB", "MB", "GB", "TB"];
-  let unitIndex = 0;
-  let size = bytes;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-
-  return `${size.toFixed(2)} ${units[unitIndex]}`;
-}
-
-function formatDateTime(timestamp) {
-  const date = new Date(timestamp);
-
-  const formattedDate = date.toLocaleDateString("en-US", {
-    month: "short", // 'Nov'
-    day: "numeric", // '7'
-    year: "numeric", // '2024'
-  });
-
-  const formattedTime = date.toLocaleTimeString("en-US", {
-    hour: "2-digit", // '05'
-    minute: "2-digit", // '26'
-    hour12: false, // 24-hour format
-  });
-
-  return `${formattedDate} ${formattedTime}`;
-}
+import formatDateTime from "@/lib/utils/formatDateTime";
+import formatFileSize from "@/lib/utils/formatFileSize";
 
 const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
   const [items, setItems] = useState([]);
@@ -117,7 +88,7 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
         content: "Upload files",
         onAction: showUploadModal,
       }}
-      image="https://cdn.shopify.com/s/files/1/2376/3301/products/emptystate-files.png"
+      image="/images/empty.svg"
     >
       <Text
         as="p"
@@ -180,7 +151,10 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
             const { name, originalFileName, size, created_at, mimetype } = item;
 
             return (
-              <ResourceItem id={name}>
+              <ResourceItem
+                id={name}
+                key={name}
+              >
                 <InlineStack
                   gap="200"
                   align="space-between"
@@ -261,6 +235,8 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
           <button
             variant="primary"
             onClick={deleteFiles}
+            loading={loading ? "" : undefined}
+            disabled={loading ? "" : undefined}
           >
             Delete
           </button>

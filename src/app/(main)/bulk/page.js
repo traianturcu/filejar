@@ -43,6 +43,7 @@ const BulkPage = () => {
               gap="100"
               blockAlign="center"
               align="center"
+              wrap={false}
             >
               <Icon source={LockFilledIcon} />
               <Text

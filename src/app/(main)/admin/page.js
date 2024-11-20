@@ -149,7 +149,10 @@ const AdminPage = () => {
           <IndexTable.Cell>{row.name}</IndexTable.Cell>
           <IndexTable.Cell>{row.plan?.displayName}</IndexTable.Cell>
           <IndexTable.Cell>
-            <InlineStack gap="200">
+            <InlineStack
+              gap="200"
+              wrap={false}
+            >
               <Tooltip content="Impersonate Shop">
                 <Button
                   variant="primary"
@@ -208,7 +211,10 @@ const AdminPage = () => {
         <Layout.Section>
           <Card roundedAbove="sm">
             <BlockStack gap="500">
-              <InlineStack gap="200">
+              <InlineStack
+                gap="200"
+                wrap={false}
+              >
                 <TextField
                   value={queryValue}
                   onChange={setQueryValue}
@@ -319,8 +325,8 @@ const AdminPage = () => {
           <button
             variant="primary"
             onClick={saveSpecialOffers}
-            disabled={loading || offers.some((offer) => offer.discountPercentage && offer.discountAmount)}
-            loading={loading}
+            disabled={loading || offers.some((offer) => offer.discountPercentage && offer.discountAmount) ? "" : undefined}
+            loading={loading ? "" : undefined}
           >
             Save
           </button>

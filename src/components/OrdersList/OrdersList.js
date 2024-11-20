@@ -1,18 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import {
-  Badge,
-  BlockStack,
-  Button,
-  Card,
-  EmptyState,
-  Filters,
-  IndexFilters,
-  IndexTable,
-  InlineStack,
-  Link,
-  Text,
-  useSetIndexFiltersMode,
-} from "@shopify/polaris";
+import { Badge, BlockStack, Button, Card, EmptyState, IndexFilters, IndexTable, InlineStack, Link, Text, useSetIndexFiltersMode } from "@shopify/polaris";
 import { ExternalSmallIcon, ViewIcon } from "@shopify/polaris-icons";
 import useDebounce from "@/lib/utils/useDebounce";
 import { ordersPerPage } from "@/constants/orders";
@@ -24,8 +13,6 @@ const OrdersList = () => {
   const [totalOrders, setTotalOrders] = useState(0);
   const [page, setPage] = useState(1);
   const [sortSelected, setSortSelected] = useState(["created_at desc"]);
-  const [showError, setShowError] = useState(false);
-  const [errorContent, setErrorContent] = useState("");
   const { mode, setMode } = useSetIndexFiltersMode();
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -49,7 +36,7 @@ const OrdersList = () => {
   const emptyStateMarkup = (
     <EmptyState
       heading="No orders yet"
-      image="https://cdn.shopify.com/s/files/1/2376/3301/products/emptystate-files.png"
+      image="/images/empty.svg"
     >
       <Text
         as="p"
@@ -201,7 +188,10 @@ const OrdersList = () => {
         <IndexTable.Cell>{formatDateTime(created_at)}</IndexTable.Cell>
         <IndexTable.Cell>{`${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`}</IndexTable.Cell>
         <IndexTable.Cell>
-          <InlineStack gap="200">
+          <InlineStack
+            gap="200"
+            wrap={false}
+          >
             <Button
               variant="primary"
               icon={ViewIcon}
@@ -255,16 +245,6 @@ const OrdersList = () => {
         itemCount={totalOrders}
         headings={[{ title: "Order" }, { title: "Customer" }, { title: "Email" }, { title: "Date" }, { title: "Total" }, { title: "Actions" }]}
         emptyState={emptyStateMarkup}
-        filterControl={
-          <Filters
-            queryValue={searchTerm}
-            onQueryChange={setSearchTerm}
-            onQueryClear={() => setSearchTerm("")}
-            onClearAll={() => setSearchTerm("")}
-            filters={[]}
-            appliedFilters={[]}
-          />
-        }
         loading={loading}
         pagination={{
           hasNext: totalOrders > page * ordersPerPage,

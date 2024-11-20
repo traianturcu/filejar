@@ -71,6 +71,7 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
             gap="200"
             align="space-between"
             blockAlign="center"
+            wrap={false}
           >
             <Text
               as="h2"
@@ -117,6 +118,7 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
                     gap="200"
                     align="center"
                     blockAlign="center"
+                    wrap={false}
                   >
                     {offers?.extendedFreeTrial && (
                       <Badge
@@ -143,6 +145,7 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
             gap="200"
             align="space-between"
             blockAlign="center"
+            wrap={false}
           >
             <Text
               as="span"
