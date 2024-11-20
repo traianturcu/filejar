@@ -2,6 +2,7 @@ import { updateAccessToken } from "@/lib/auth";
 import { getShop, updateShopDetails } from "@/lib/shop";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const GET = async (request) => {
   try {

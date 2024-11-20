@@ -27,7 +27,7 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
       setLoading(true);
 
       const [sortBy, sortOrder] = sortValue.split("-");
-      const res = await fetch(`/api/files/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      const res = await fetch(`/api/files/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, { cache: "no-store" });
       const { files, count } = await res.json();
       setItems(files);
       setTotalFiles(count);
@@ -237,6 +237,7 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
             onClick={deleteFiles}
             loading={loading ? "" : undefined}
             disabled={loading ? "" : undefined}
+            tone="critical"
           >
             Delete
           </button>

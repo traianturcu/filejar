@@ -48,7 +48,7 @@ export const middleware = async (request) => {
     }
     if (Type === "SubscriptionConfirmation") {
       if (SubscribeURL) {
-        await fetch(SubscribeURL);
+        await fetch(SubscribeURL, { cache: "no-store" });
       }
       return Response.json(
         {

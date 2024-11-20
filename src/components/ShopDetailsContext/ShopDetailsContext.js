@@ -8,7 +8,7 @@ const ShopDetailsProvider = ({ children }) => {
   const [shopDetails, setShopDetails] = useState(null);
 
   const runEffect = async () => {
-    const res = await fetch("/api/shop-details");
+    const res = await fetch("/api/shop-details", { cache: "no-store" });
     const data = await res.json();
     if (data?.details) {
       setShopDetails(data.details);

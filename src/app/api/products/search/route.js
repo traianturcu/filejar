@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { productsPerPage } from "@/constants/products";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 

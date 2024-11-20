@@ -16,7 +16,7 @@ export const useUppyWithSupabase = ({ bucketName, onComplete, onError }) => {
     if (!shopDetails || !shopify || !uppy) return;
 
     const initUppy = async () => {
-      const { token } = await fetch("/api/supabaseToken").then((res) => res.json());
+      const { token } = await fetch("/api/supabaseToken", { cache: "no-store" }).then((res) => res.json());
       const tus_instance = uppy.getPlugin("Tus");
       if (tus_instance) uppy.removePlugin(tus_instance);
       uppy

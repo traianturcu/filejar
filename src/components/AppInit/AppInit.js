@@ -13,7 +13,7 @@ const AppInit = () => {
     }
 
     const runEffect = async () => {
-      const res = await fetch("/api/init");
+      const res = await fetch("/api/init", { cache: "no-store" });
       const { success, message, action } = await res.json();
 
       if (action === "welcome" && pathname !== "/welcome" && pathname !== "/admin") {

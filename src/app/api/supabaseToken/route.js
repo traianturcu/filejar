@@ -2,6 +2,7 @@ import { getShop } from "@/lib/shop";
 import * as jose from "jose";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const jwtConfig = {
   secret: new TextEncoder().encode(process.env.SHOPIFY_API_SECRET_KEY),

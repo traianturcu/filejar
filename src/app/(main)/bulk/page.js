@@ -14,7 +14,7 @@ const BulkPage = () => {
 
   useEffect(() => {
     const runEffect = async () => {
-      const res = await fetch("/api/paid/secret");
+      const res = await fetch("/api/paid/secret", { cache: "no-store" });
       const data = await res.json();
       if (data?.secret) {
         setSecret(data.secret);

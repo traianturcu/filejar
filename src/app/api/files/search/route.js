@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { filesPerPage } from "@/constants/files";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 

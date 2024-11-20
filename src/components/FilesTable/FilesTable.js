@@ -33,7 +33,7 @@ const FilesTable = ({ refresh, setRefresh, showUploadModal, selectedFiles, setSe
       setLoading(true);
 
       const [sortBy, sortOrder] = sortSelected?.[0]?.split(" ");
-      const res = await fetch(`/api/files/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      const res = await fetch(`/api/files/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, { cache: "no-store" });
       const { files, count } = await res.json();
       const remappedFiles = files.map((file) => {
         return {

@@ -22,7 +22,7 @@ const OrdersList = () => {
       setLoading(true);
 
       const [sortBy, sortOrder] = sortSelected?.[0]?.split(" ");
-      const res = await fetch(`/api/orders/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      const res = await fetch(`/api/orders/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, { cache: "no-store" });
       const { orders, count } = await res.json();
       setItems(orders);
       setTotalOrders(count);

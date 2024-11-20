@@ -1,6 +1,9 @@
 import { updateShopDetails } from "@/lib/shop";
 import { getShopsToUpdate } from "@/lib/cron";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const GET = async (request) => {
   try {
     const shops = await getShopsToUpdate();
