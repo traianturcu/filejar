@@ -63,7 +63,7 @@ const FilesTable = ({ refresh, setRefresh, showUploadModal, selectedFiles, setSe
       }
       setRefresh(false);
     }
-  }, [setRefresh, refresh]);
+  }, [setRefresh, refresh, setSearchTerm, selectedFiles, handleSelectionChange, clearSelection]);
 
   useEffect(() => {
     setSelectedFiles(selectedResources);

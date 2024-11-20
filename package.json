@@ -12,7 +12,8 @@
     "app:use": "shopify app config use",
     "app:deploy": "shopify app deploy",
     "app:info": "shopify app info",
-    "app:dev": "shopify app dev"
+    "app:dev": "shopify app dev",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.693.0",
@@ -41,6 +42,7 @@
     "@shopify/app": "^3.58.2",
     "@shopify/cli": "^3.69.4",
     "eslint": "^8",
-    "eslint-config-next": "14.2.16"
+    "eslint-config-next": "14.2.16",
+    "husky": "^9.1.7"
   }
 }

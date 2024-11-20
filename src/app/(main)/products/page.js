@@ -46,7 +46,7 @@ const ProductsPage = () => {
 
   const router = useRouter();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (searchTerm !== debouncedSearchTerm) return;
 
     setLoading(true);
@@ -58,7 +58,7 @@ const ProductsPage = () => {
     setTotalProducts(count);
 
     setLoading(false);
-  };
+  }, [debouncedSearchTerm, page, sortSelected, searchTerm]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -68,12 +68,12 @@ const ProductsPage = () => {
       setMode(IndexFiltersMode.Filtering);
     }
     setInitialized(true);
-  }, []);
+  }, [setMode, setSearchTerm]);
 
   useEffect(() => {
     if (!initialized) return;
     fetchProducts();
-  }, [debouncedSearchTerm, page, sortSelected, initialized]);
+  }, [fetchProducts, initialized]);
 
   const handleArchive = async (id) => {
     setLoading(true);
