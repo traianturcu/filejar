@@ -27,7 +27,7 @@ import {
 } from "@shopify/polaris";
 import { EditIcon, ArchiveIcon, ViewIcon, StatusActiveIcon, DeleteIcon, ChatIcon } from "@shopify/polaris-icons";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const ProductsPage = () => {
   const [items, setItems] = useState([]);
