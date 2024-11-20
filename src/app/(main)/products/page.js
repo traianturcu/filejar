@@ -338,7 +338,7 @@ const ProductsPage = () => {
                   },
                 }}
               >
-                Please try again or contact us using the button below and we'll be happy to help.
+                Please try again or contact us using the button below and we&apos;ll be happy to help.
               </Banner>
             )}
             <Card roundedAbove="sm">
