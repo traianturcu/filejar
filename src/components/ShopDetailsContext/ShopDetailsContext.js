@@ -7,8 +7,8 @@ const ShopDetailsContext = createContext();
 const ShopDetailsProvider = ({ children }) => {
   const [shopDetails, setShopDetails] = useState(null);
 
-  const runEffect = async () => {
-    const res = await fetch("/api/shop-details", { cache: "no-store" });
+  const runEffect = async (forced = false) => {
+    const res = await fetch(`/api/shop-details?${forced ? "forced=true" : ""}`, { cache: "no-store" });
     const data = await res.json();
     if (data?.details) {
       setShopDetails(data.details);
@@ -19,7 +19,11 @@ const ShopDetailsProvider = ({ children }) => {
     runEffect();
   }, []);
 
-  return <ShopDetailsContext.Provider value={{ setShopDetails, shopDetails, refetchShopDetails: runEffect }}>{children}</ShopDetailsContext.Provider>;
+  return (
+    <ShopDetailsContext.Provider value={{ setShopDetails, shopDetails, refetchShopDetails: runEffect, refetchShopDetailsForced: () => runEffect(true) }}>
+      {children}
+    </ShopDetailsContext.Provider>
+  );
 };
 
 export const useShopDetails = () => {

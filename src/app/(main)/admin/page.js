@@ -125,6 +125,18 @@ const AdminPage = () => {
     ]);
   };
 
+  const updateTotalStorage = (planId, value) => {
+    setOffers((prev) => [...prev.filter((offer) => offer.id !== planId), { ...prev.find((offer) => offer.id === planId), id: planId, total_storage: value }]);
+  };
+
+  const updateTotalProducts = (planId, value) => {
+    setOffers((prev) => [...prev.filter((offer) => offer.id !== planId), { ...prev.find((offer) => offer.id === planId), id: planId, total_products: value }]);
+  };
+
+  const updateTotalOrders = (planId, value) => {
+    setOffers((prev) => [...prev.filter((offer) => offer.id !== planId), { ...prev.find((offer) => offer.id === planId), id: planId, total_orders: value }]);
+  };
+
   const saveSpecialOffers = async () => {
     setLoading(true);
     await fetch("/api/admin/save-special-offers", {
@@ -254,71 +266,96 @@ const AdminPage = () => {
             >
               {rows.find((row) => row.myshopifyDomain === specialOffersShop)?.name}
             </Text>
-            {billingPlans
-              .filter((plan) => plan.amount)
-              .map((plan) => (
-                <Card key={plan.id}>
-                  <Layout>
-                    <Layout.Section>
-                      <BlockStack gap="500">
-                        <Text
-                          variant="bodyLg"
-                          fontWeight="bold"
-                        >
-                          {plan.name}
-                        </Text>
-                        <FormLayout>
+            {billingPlans.map((plan) => (
+              <Card key={plan.id}>
+                <Layout>
+                  <Layout.Section>
+                    <BlockStack gap="500">
+                      <Text
+                        variant="bodyLg"
+                        fontWeight="bold"
+                      >
+                        {plan.name}
+                      </Text>
+                      <FormLayout>
+                        <TextField
+                          label="Extended Free Trial"
+                          type="number"
+                          suffix="days"
+                          autoComplete="off"
+                          value={offers.find((offer) => offer.id === plan.id)?.extendedFreeTrial ?? 0}
+                          onChange={(v) => updateExtendedFreeTrial(plan.id, v)}
+                        />
+                        <FormLayout.Group>
                           <TextField
-                            label="Extended Free Trial"
+                            label="Discount Duration"
                             type="number"
-                            suffix="days"
+                            suffix="months"
                             autoComplete="off"
-                            value={offers.find((offer) => offer.id === plan.id)?.extendedFreeTrial ?? 0}
-                            onChange={(v) => updateExtendedFreeTrial(plan.id, v)}
+                            value={offers.find((offer) => offer.id === plan.id)?.durationLimitInIntervals ?? ""}
+                            onChange={(v) => updateDiscountDuration(plan.id, v)}
+                            helpText="Leave blank for lifetime discount"
                           />
-                          <FormLayout.Group>
-                            <TextField
-                              label="Discount Duration"
-                              type="number"
-                              suffix="months"
-                              autoComplete="off"
-                              value={offers.find((offer) => offer.id === plan.id)?.durationLimitInIntervals ?? ""}
-                              onChange={(v) => updateDiscountDuration(plan.id, v)}
-                              helpText="Leave blank for lifetime discount"
-                            />
-                            <TextField
-                              label="Discount Dollar Amount"
-                              type="number"
-                              prefix="$"
-                              autoComplete="off"
-                              value={offers.find((offer) => offer.id === plan.id)?.discountAmount ?? ""}
-                              onChange={(v) => updateDiscountAmount(plan.id, v)}
-                              error={
-                                offers.find((offer) => offer.id === plan.id)?.discountPercentage && offers.find((offer) => offer.id === plan.id)?.discountAmount
-                                  ? "Please set only one discount type"
-                                  : ""
-                              }
-                            />
-                            <TextField
-                              label="Discount Percentage"
-                              type="number"
-                              suffix="%"
-                              autoComplete="off"
-                              value={offers.find((offer) => offer.id === plan.id)?.discountPercentage ?? ""}
-                              onChange={(v) => updateDiscountPercentage(plan.id, v)}
-                              error={
-                                offers.find((offer) => offer.id === plan.id)?.discountPercentage && offers.find((offer) => offer.id === plan.id)?.discountAmount
-                                  ? "Please set only one discount type"
-                                  : ""
-                              }
-                            />
-                          </FormLayout.Group>
-                        </FormLayout>
-                      </BlockStack>
-                    </Layout.Section>
-                  </Layout>
-                </Card>
-              ))}
+                          <TextField
+                            label="Discount Dollar Amount"
+                            type="number"
+                            prefix="$"
+                            autoComplete="off"
+                            value={offers.find((offer) => offer.id === plan.id)?.discountAmount ?? ""}
+                            onChange={(v) => updateDiscountAmount(plan.id, v)}
+                            error={
+                              offers.find((offer) => offer.id === plan.id)?.discountPercentage && offers.find((offer) => offer.id === plan.id)?.discountAmount
+                                ? "Please set only one discount type"
+                                : ""
+                            }
+                          />
+                          <TextField
+                            label="Discount Percentage"
+                            type="number"
+                            suffix="%"
+                            autoComplete="off"
+                            value={offers.find((offer) => offer.id === plan.id)?.discountPercentage ?? ""}
+                            onChange={(v) => updateDiscountPercentage(plan.id, v)}
+                            error={
+                              offers.find((offer) => offer.id === plan.id)?.discountPercentage && offers.find((offer) => offer.id === plan.id)?.discountAmount
+                                ? "Please set only one discount type"
+                                : ""
+                            }
+                          />
+                        </FormLayout.Group>
+                        <FormLayout.Group>
+                          <TextField
+                            label="Storage Limit"
+                            type="number"
+                            suffix="bytes"
+                            autoComplete="off"
+                            value={offers.find((offer) => offer.id === plan.id)?.total_storage ?? ""}
+                            onChange={(v) => updateTotalStorage(plan.id, v)}
+                            helpText="-1 for unlimited"
+                          />
+                          <TextField
+                            label="Products Limit"
+                            type="number"
+                            autoComplete="off"
+                            value={offers.find((offer) => offer.id === plan.id)?.total_products ?? ""}
+                            onChange={(v) => updateTotalProducts(plan.id, v)}
+                            helpText="-1 for unlimited"
+                          />
+                          <TextField
+                            label="Orders Limit"
+                            type="number"
+                            autoComplete="off"
+                            value={offers.find((offer) => offer.id === plan.id)?.total_orders ?? ""}
+                            onChange={(v) => updateTotalOrders(plan.id, v)}
+                            helpText="-1 for unlimited"
+                          />
+                        </FormLayout.Group>
+                      </FormLayout>
+                    </BlockStack>
+                  </Layout.Section>
+                </Layout>
+              </Card>
+            ))}
           </BlockStack>
         </Box>
         <TitleBar title={`Special Offers for ${specialOffersShop}`}>

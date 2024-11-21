@@ -15,12 +15,13 @@ const calc_intercom_user_hash = (shop) => {
 export const GET = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");
+    const forced = request?.nextUrl?.searchParams?.get("forced");
 
     if (!shop) {
       throw new Error("Shop header is missing");
     }
 
-    const data = await getShop(shop);
+    const data = await getShop(shop, forced);
 
     if (!data.details) {
       throw new Error("Shop details not found");
@@ -37,6 +38,8 @@ export const GET = async (request) => {
     details.billing_days_used = data.billing_days_used;
     details.onboarding = data.onboarding;
     details.offers = data.offers;
+    details.usage = data.usage;
+    details.last_usage_check = data.last_usage_check;
 
     return Response.json({
       success: true,

@@ -14,7 +14,6 @@ const AddFilesModal = ({ selectedFiles, setSelectedFiles, refresh, setRefresh })
   };
 
   const saveFiles = () => {
-    console.log({ newFiles });
     setSelectedFiles(newFiles);
     closeAddFilesModal();
   };

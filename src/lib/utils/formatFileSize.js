@@ -1,4 +1,8 @@
-const formatFileSize = (bytes) => {
+const formatFileSize = (bytes, precision = 2, separator = " ") => {
+  if (bytes === -1) {
+    return "∞";
+  }
+
   const units = ["B", "kB", "MB", "GB", "TB"];
   let unitIndex = 0;
   let size = bytes;
@@ -8,7 +12,11 @@ const formatFileSize = (bytes) => {
     unitIndex++;
   }
 
-  return `${size.toFixed(2)} ${units[unitIndex]}`;
+  // Format number based on decimal rules
+  const fixed = size.toFixed(precision);
+  const formatted = fixed.endsWith(".00") ? Math.floor(size).toString() : fixed.endsWith(".50") ? (Math.floor(size) + ".5").toString() : fixed;
+
+  return `${formatted}${separator}${units[unitIndex]}`;
 };
 
 export default formatFileSize;
