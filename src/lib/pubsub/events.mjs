@@ -8,4 +8,17 @@ export const events = [
       },
     ],
   },
+  {
+    name: "ORDER_PAID",
+    subscribers: [
+      {
+        handler: "api/subscriber/orderPaidToDB",
+        type: "api",
+      },
+      {
+        handler: "api/subscriber/sendOrderEmail",
+        type: "api",
+      },
+    ],
+  },
 ];

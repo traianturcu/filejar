@@ -3,4 +3,4 @@ export * from "./handleAppUninstalled";
 export * from "./handleCustomerDataRequest";
 export * from "./handleCustomerRedact";
 export * from "./handleShopRedact";
-export * from "./handleOrderCreated";
+export * from "./handleOrderPaid";

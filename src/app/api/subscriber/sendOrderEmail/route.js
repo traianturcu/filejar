@@ -1,0 +1,23 @@
+export const POST = async (req) => {
+  try {
+    const { Message } = await req.json();
+    const { shop, order } = JSON.parse(Message);
+    if (!shop || !order) {
+      throw new Error("Shop or order not found");
+    }
+
+    console.log("send email", {
+      shop,
+      order,
+    });
+  } catch (error) {
+    console.error("Error handling orderPaidToDB", error);
+    return Response.json(
+      {
+        success: false,
+        error,
+      },
+      { status: 500 }
+    );
+  }
+};

@@ -2,9 +2,18 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-export const handleOrderCreated = async (shop, order) => {
+export const POST = async (req) => {
   try {
-    // todo: check if order contains a product with a download
+    const { Message } = await req.json();
+    const { shop, order } = JSON.parse(Message);
+    if (!shop || !order) {
+      throw new Error("Shop or order not found");
+    }
+
+    console.log("orderPaidToDB", {
+      shop,
+      order,
+    });
 
     const { data: existingOrder } = await supabase.from("order").select("events, downloads, custom_files, access, status").eq("order_id", order.id).single();
 
@@ -31,7 +40,7 @@ export const handleOrderCreated = async (shop, order) => {
     const cancelled_at = order.cancelled_at ? new Date(order.cancelled_at).toISOString() : null;
 
     events.push({
-      action: "Order placed",
+      action: "Order paid",
       created_at,
     });
 
@@ -64,15 +73,14 @@ export const handleOrderCreated = async (shop, order) => {
         onConflict: "order_id",
       }
     );
-
-    if (error) {
-      throw new Error(error.message);
-    }
   } catch (error) {
-    console.error("Error in orders/create webhook", {
-      error,
-      shop,
-      order,
-    });
+    console.error("Error handling orderPaidToDB", error);
+    return Response.json(
+      {
+        success: false,
+        error,
+      },
+      { status: 500 }
+    );
   }
 };

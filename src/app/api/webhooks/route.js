@@ -1,4 +1,4 @@
-import { verifyWebhook, handleCustomerDataRequest, handleCustomerRedact, handleShopRedact, handleAppUninstalled, handleOrderCreated } from "@/lib/webhooks";
+import { verifyWebhook, handleCustomerDataRequest, handleCustomerRedact, handleShopRedact, handleAppUninstalled, handleOrderPaid } from "@/lib/webhooks";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +23,8 @@ export const POST = async (request) => {
       case "shop/redact":
         await handleShopRedact(shop);
         break;
-      case "orders/create":
-        await handleOrderCreated(shop, body);
+      case "orders/paid":
+        await handleOrderPaid(shop, body);
         break;
     }
 
