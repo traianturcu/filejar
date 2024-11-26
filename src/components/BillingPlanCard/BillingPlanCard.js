@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Badge, BlockStack, Box, Button, Card, InlineStack, List, Text } from "@shopify/polaris";
 import { selectPlan } from "@/lib/client/billing";
-import { billingCardHeight } from "@/constants/billingPage";
+import { billingCardHeight, billingFreeCardHeight } from "@/constants/billingPage";
 
 const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_used, offers }) => {
   const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
               </Badge>
             )}
           </InlineStack>
-          <Box minHeight={billingCardHeight}>
+          <Box minHeight={plan.id === "free" ? billingFreeCardHeight : billingCardHeight}>
             <BlockStack
               gap="500"
               inlineAlign="start"
@@ -156,7 +156,8 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
                   <s>{originalPrice}</s> <b>{discountedPrice}</b>
                 </>
               ) : (
-                <b>Free</b>
+                // <b>Free</b>
+                <></>
               )}
             </Text>
             <Text

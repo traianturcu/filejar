@@ -4,3 +4,8 @@ export * from "./handleCustomerDataRequest";
 export * from "./handleCustomerRedact";
 export * from "./handleShopRedact";
 export * from "./handleOrderPaid";
+export * from "./handleOrderCancelled";
+export * from "./handleOrderUpdated";
+export * from "./handleOrderFulfilled";
+export * from "./handleOrderPartiallyFulfilled";
+export * from "./handleRiskAssessmentChanged";

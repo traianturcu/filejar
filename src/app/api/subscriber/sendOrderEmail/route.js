@@ -6,10 +6,22 @@ export const POST = async (req) => {
       throw new Error("Shop or order not found");
     }
 
+    // TODO: check if we should send an email:
+    // - the order is paid
+    // - fulfillable items have corresponding files
+    // - the order is not high risk
+
     console.log("send email", {
       shop,
       order,
     });
+
+    return Response.json(
+      {
+        success: true,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error handling orderPaidToDB", error);
     return Response.json(

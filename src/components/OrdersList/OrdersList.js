@@ -1,7 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Badge, BlockStack, Button, Card, EmptyState, IndexFilters, IndexTable, InlineStack, Link, Text, useSetIndexFiltersMode } from "@shopify/polaris";
+import {
+  Badge,
+  BlockStack,
+  Button,
+  Card,
+  EmptyState,
+  IndexFilters,
+  IndexTable,
+  InlineStack,
+  Link,
+  Text,
+  Tooltip,
+  useSetIndexFiltersMode,
+} from "@shopify/polaris";
 import { ExternalSmallIcon, ViewIcon } from "@shopify/polaris-icons";
 import useDebounce from "@/lib/utils/useDebounce";
 import { ordersPerPage } from "@/constants/orders";
@@ -142,9 +155,24 @@ const OrdersList = () => {
     { label: "Total", value: "total desc", directionLabel: "Descending" },
   ];
 
+  console.log("items", items);
+
   const rowMarkup = items?.map(
     (
-      { order_id, order_name, customer_first_name, customer_last_name, customer_email, created_at, fulfillment_status, payment_status, total, currency },
+      {
+        order_id,
+        order_name,
+        customer_first_name,
+        customer_last_name,
+        customer_email,
+        created_at,
+        fulfillment_status,
+        payment_status,
+        total,
+        currency,
+        cancelled_at,
+        fraud_risk,
+      },
       index
     ) => (
       <IndexTable.Row
@@ -166,20 +194,55 @@ const OrdersList = () => {
               </Text>
             </Link>
             <InlineStack gap="200">
-              <Badge
-                size="small"
-                progress={fulfillment_badges[fulfillment_status]?.progress ?? fulfillment_badges.default.progress}
-                tone={fulfillment_badges[fulfillment_status]?.tone ?? fulfillment_badges.default.tone}
-              >
-                {fulfillment_badge_labels[fulfillment_status] ?? fulfillment_badge_labels.default}
-              </Badge>
-              <Badge
-                size="small"
-                progress={payment_badges[payment_status]?.progress ?? payment_badges.default.progress}
-                tone={payment_badges[payment_status]?.tone ?? payment_badges.default.tone}
-              >
-                {payment_badge_labels[payment_status] ?? payment_badge_labels.default}
-              </Badge>
+              {cancelled_at ? (
+                <Badge
+                  size="small"
+                  tone="warning"
+                >
+                  Cancelled
+                </Badge>
+              ) : (
+                <>
+                  <Badge
+                    size="small"
+                    progress={fulfillment_badges[fulfillment_status]?.progress ?? fulfillment_badges.default.progress}
+                    tone={fulfillment_badges[fulfillment_status]?.tone ?? fulfillment_badges.default.tone}
+                  >
+                    {fulfillment_badge_labels[fulfillment_status] ?? fulfillment_badge_labels.default}
+                  </Badge>
+                  <Badge
+                    size="small"
+                    progress={payment_badges[payment_status]?.progress ?? payment_badges.default.progress}
+                    tone={payment_badges[payment_status]?.tone ?? payment_badges.default.tone}
+                  >
+                    {payment_badge_labels[payment_status] ?? payment_badge_labels.default}
+                  </Badge>
+                </>
+              )}
+              {fraud_risk === "high" && (
+                <Badge
+                  size="small"
+                  tone="critical"
+                >
+                  High Risk
+                </Badge>
+              )}
+              {fraud_risk === "medium" && (
+                <Badge
+                  size="small"
+                  tone="warning"
+                >
+                  Medium Risk
+                </Badge>
+              )}
+              {fraud_risk === "low" && (
+                <Badge
+                  size="small"
+                  tone="success"
+                >
+                  Low Risk
+                </Badge>
+              )}
             </InlineStack>
           </BlockStack>
         </IndexTable.Cell>
@@ -192,21 +255,21 @@ const OrdersList = () => {
             gap="200"
             wrap={false}
           >
-            <Button
-              variant="primary"
-              icon={ViewIcon}
-              onClick={() => {}}
-            >
-              Manage
-            </Button>
-            <Button
-              icon={ExternalSmallIcon}
-              onClick={() => {
-                open(`shopify://admin/orders/${order_id}`, "_blank");
-              }}
-            >
-              View in Shopify
-            </Button>
+            <Tooltip content="Manage order">
+              <Button
+                variant="primary"
+                icon={ViewIcon}
+                onClick={() => {}}
+              />
+            </Tooltip>
+            <Tooltip content="View order in Shopify">
+              <Button
+                icon={ExternalSmallIcon}
+                onClick={() => {
+                  open(`shopify://admin/orders/${order_id}`, "_blank");
+                }}
+              />
+            </Tooltip>
           </InlineStack>
         </IndexTable.Cell>
       </IndexTable.Row>

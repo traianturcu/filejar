@@ -65,6 +65,7 @@ export const GET = async (request) => {
       customer_first_name: order.customer_first_name,
       customer_last_name: order.customer_last_name,
       created_at: order.created_at,
+      fraud_risk: order.fraud_risk,
     }));
 
     return Response.json(

@@ -2,14 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-export const POST = async (req) => {
+export const handleOrderUpdated = async (shop, order) => {
   try {
-    const { Message } = await req.json();
-    const { shop, order } = JSON.parse(Message);
-    if (!shop || !order) {
-      throw new Error("Shop or order not found");
-    }
-
     const { data: existingOrder } = await supabase.from("order").select("events, downloads, custom_files, access, status").eq("order_id", order.id).single();
 
     const events = existingOrder?.events ?? [];
@@ -35,11 +29,11 @@ export const POST = async (req) => {
     const cancelled_at = order.cancelled_at ? new Date(order.cancelled_at).toISOString() : null;
 
     events.push({
-      action: "Order paid",
-      created_at,
+      action: "Order updated",
+      updated_at: new Date().toISOString(),
     });
 
-    const { error } = await supabase.from("order").upsert(
+    await supabase.from("order").upsert(
       {
         shop,
         created_at,
@@ -68,21 +62,11 @@ export const POST = async (req) => {
         onConflict: "order_id",
       }
     );
-
-    return Response.json(
-      {
-        success: true,
-      },
-      { status: 200 }
-    );
   } catch (error) {
-    console.error("Error handling orderPaidToDB", error);
-    return Response.json(
-      {
-        success: false,
-        error,
-      },
-      { status: 500 }
-    );
+    console.error("Error in handleOrderUpdated", {
+      error,
+      shop,
+      order,
+    });
   }
 };

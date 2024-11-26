@@ -37,17 +37,35 @@ const BillingPage = () => {
               gap="300"
               columns={{ sm: 1, md: 3 }}
             >
-              {billingPlans.map((plan) => (
-                <BillingPlanCard
-                  key={plan.id}
-                  plan={plan}
-                  billing_plan={shopDetails?.billing_plan}
-                  billing_days_used={shopDetails?.billing_days_used}
-                  billing_plan_start={shopDetails?.billing_plan_start}
-                  offers={shopDetails?.offers?.find((offer) => offer.id === plan.id)}
-                />
-              ))}
+              {billingPlans.map((plan) => {
+                if (plan.id !== "free") {
+                  return (
+                    <BillingPlanCard
+                      key={plan.id}
+                      plan={plan}
+                      billing_plan={shopDetails?.billing_plan}
+                      billing_days_used={shopDetails?.billing_days_used}
+                      billing_plan_start={shopDetails?.billing_plan_start}
+                      offers={shopDetails?.offers?.find((offer) => offer.id === plan.id)}
+                    />
+                  );
+                }
+              })}
             </InlineGrid>
+            {billingPlans.map((plan) => {
+              if (plan.id === "free") {
+                return (
+                  <BillingPlanCard
+                    key={plan.id}
+                    plan={plan}
+                    billing_plan={shopDetails?.billing_plan}
+                    billing_days_used={shopDetails?.billing_days_used}
+                    billing_plan_start={shopDetails?.billing_plan_start}
+                    offers={shopDetails?.offers?.find((offer) => offer.id === plan.id)}
+                  />
+                );
+              }
+            })}
           </BlockStack>
         </Layout.Section>
       </Layout>

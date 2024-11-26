@@ -7,7 +7,7 @@ export const handleOrderPaid = async (shop, order) => {
       order,
     });
   } catch (error) {
-    console.error("Error in orders/paid webhook", {
+    console.error("Error in handleOrderPaid", {
       error,
       shop,
       order,
