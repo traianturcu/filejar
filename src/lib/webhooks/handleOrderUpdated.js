@@ -37,6 +37,8 @@ export const handleOrderUpdated = async (shop, order) => {
 
     const is_digital = count > 0;
 
+    console.log("is_digital in handleOrderUpdated", { is_digital, count, fullfilable_variant_ids });
+
     events.push({
       action: "Order updated",
       updated_at: new Date().toISOString(),

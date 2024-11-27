@@ -48,6 +48,8 @@ export const POST = async (req) => {
 
     const is_digital = count > 0;
 
+    console.log("is_digital in orderPaidToDB", { is_digital, count, fullfilable_variant_ids });
+
     const { error } = await supabase.from("order").upsert(
       {
         shop,
