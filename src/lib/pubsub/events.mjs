@@ -15,6 +15,11 @@ export const events = [
         handler: "api/subscriber/orderPaidToDB",
         type: "api",
       },
+    ],
+  },
+  {
+    name: "SEND_ORDER_EMAIL",
+    subscribers: [
       {
         handler: "api/subscriber/sendOrderEmail",
         type: "api",

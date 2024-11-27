@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import updateIsDigital from "@/lib/orders/updateIsDigital";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -62,6 +63,8 @@ export const handleOrderUpdated = async (shop, order) => {
         onConflict: "order_id",
       }
     );
+
+    await updateIsDigital(shop, order);
   } catch (error) {
     console.error("Error in handleOrderUpdated", {
       error,
