@@ -155,8 +155,6 @@ const OrdersList = () => {
     { label: "Total", value: "total desc", directionLabel: "Descending" },
   ];
 
-  console.log("items", items);
-
   const rowMarkup = items?.map(
     (
       {

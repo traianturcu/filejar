@@ -16,7 +16,6 @@ const UploadFilesModal = ({ onHide }) => {
   };
 
   const onComplete = (result) => {
-    console.log({ result });
     for (const file of result?.successful) {
       if (file?.progress?.uploadComplete && file?.meta?.objectName) {
         names.push(file.meta.objectName);

@@ -33,20 +33,15 @@ export const useUppyWithSupabase = ({ bucketName, onComplete, onError }) => {
           chunkSize: 6 * 1024 * 1024,
           allowedMetaFields: ["bucketName", "objectName", "contentType", "originalFileName", "metadata"],
           onShouldRetry: (err, retryAtempt, options, next) => {
-            console.log("onShouldRetry", { err, retryAtempt, options, next });
-            console.log("status", err?.originalResponse?.getStatus());
             if (err?.originalResponse?.getStatus() === 409) {
               // 409 - file already exists - don't retry upload
-              console.log("File already exists - do not retry upload");
               return false;
             }
             return next(err);
           },
           onAfterResponse: (req, res) => {
-            console.log({ req, res });
             const status = res.getStatus();
             const body = res.getBody();
-            console.log({ status, body });
             if (status >= 400) {
               const errorMessage = body ?? `Upload failed with status ${status}`;
               const error = new Error(errorMessage);
@@ -66,11 +61,8 @@ export const useUppyWithSupabase = ({ bucketName, onComplete, onError }) => {
             }),
             contentType: file.type,
           };
-
-          console.log("file-added", { file });
         })
         .on("complete", (result) => {
-          console.log("complete", { result });
           if (result.successful) {
             onComplete(result);
           } else {

@@ -40,6 +40,7 @@ export const GET = async (request) => {
       .from("order")
       .select("*", { count: "exact" })
       .eq("shop", shop)
+      .eq("is_digital", true)
       .or(
         `order_name.ilike.%${escapedSearch}%,customer_email.ilike.%${escapedSearch}%,customer_first_name.ilike.%${escapedSearch}%,customer_last_name.ilike.%${escapedSearch}%`
       )

@@ -13,15 +13,11 @@ export const POST = async (req) => {
     }
 
     // get order from supabase
-    const { data: currentOrder } = await supabase.from("order").select("is_digital").eq("order_id", order.id).eq("shop", shop).single();
+    const { data: currentOrder } = await supabase.from("order").select("*").eq("order_id", order.id).eq("shop", shop).single();
 
-    console.log("sendOrderEmail", {
-      shop,
-      order,
-      financial_status: order.financial_status,
-      risk_level: currentOrder?.risk_level,
-      is_digital: currentOrder?.is_digital,
-    });
+    if (currentOrder?.initial_email_sent) {
+      return Response.json({ skipped: true, reason: "email already sent" }, { status: 200 });
+    }
 
     if (order.financial_status !== "paid") {
       return Response.json({ skipped: true, reason: "not paid" }, { status: 200 });
@@ -35,36 +31,40 @@ export const POST = async (req) => {
       return Response.json({ skipped: true, reason: "not digital" }, { status: 200 });
     }
 
+    await supabase.from("order").update({ initial_email_sent: true }).eq("order_id", order.id).eq("shop", shop);
+
+    console.log("=== passed all checks ===");
+
+    /* OPTION 1: POSTMARK */
+    const smtp_host = process.env.POSTMARK_HOST;
+    const smtp_user = process.env.POSTMARK_API_TOKEN;
+    const smtp_pass = process.env.POSTMARK_API_TOKEN;
+    const smtp_email = process.env.POSTMARK_EMAIL;
+
+    /* OPTION 2: SES */
+    // const smtp_host = process.env.SES_HOST;
+    // const smtp_user = process.env.SES_USERNAME;
+    // const smtp_pass = process.env.SES_PASSWORD;
+    // const smtp_email = process.env.SES_EMAIL;
+
     const shopData = await getShop(shop);
     const shop_name = shopData?.details?.name;
     const customer_email = order?.customer?.email;
     const customer_first_name = order?.customer?.first_name;
     const order_name = order?.name;
 
-    console.log("send email", {
-      shop,
-      order,
-      shop_name,
-      customer_email,
-      customer_first_name,
-      order_name,
-      email: process.env.POSTMARK_EMAIL,
-      host: process.env.POSTMARK_HOST,
-      token: process.env.POSTMARK_API_TOKEN,
-    });
-
     const transporter = nodemailer.createTransport({
-      host: process.env.POSTMARK_HOST,
+      host: smtp_host,
       port: 587,
       secure: process.env.NODE_ENV !== "development",
       auth: {
-        user: process.env.POSTMARK_API_TOKEN,
-        pass: process.env.POSTMARK_API_TOKEN,
+        user: smtp_user,
+        pass: smtp_pass,
       },
     });
 
     const mailOptions = {
-      from: `"${shop_name}" <${process.env.POSTMARK_EMAIL}>`,
+      from: `"${shop_name}" <${smtp_email}>`,
       to: customer_email,
       subject: `Download your content for order ${order_name}`,
       text: `

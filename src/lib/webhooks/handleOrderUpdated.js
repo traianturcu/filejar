@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import updateIsDigital from "@/lib/orders/updateIsDigital";
+import { publish } from "@/lib/pubsub/publish";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -28,6 +28,14 @@ export const handleOrderUpdated = async (shop, order) => {
     const currency = order.current_total_price_set?.shop_money?.currency_code;
     const total = order.current_total_price_set?.shop_money?.amount ? parseFloat(order.current_total_price_set.shop_money.amount) : 0;
     const cancelled_at = order.cancelled_at ? new Date(order.cancelled_at).toISOString() : null;
+
+    const fullfilable_variant_ids = order?.line_items
+      ?.filter((item) => item.fulfillable_quantity > 0)
+      .map((item) => `gid://shopify/ProductVariant/${item.variant_id}`);
+
+    const { count } = await supabase.from("product").select("*", { count: "exact", head: true }).eq("shop", shop).overlaps("variants", fullfilable_variant_ids);
+
+    const is_digital = count > 0;
 
     events.push({
       action: "Order updated",
@@ -58,13 +66,18 @@ export const handleOrderUpdated = async (shop, order) => {
         currency,
         total,
         cancelled_at,
+        is_digital,
       },
       {
         onConflict: "order_id",
       }
     );
 
-    await updateIsDigital(shop, order);
+    // send email
+    await publish("SEND_ORDER_EMAIL", {
+      shop,
+      order,
+    });
   } catch (error) {
     console.error("Error in handleOrderUpdated", {
       error,

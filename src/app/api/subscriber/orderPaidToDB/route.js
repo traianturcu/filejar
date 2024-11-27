@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { publish } from "@/lib/pubsub/publish";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -39,6 +40,14 @@ export const POST = async (req) => {
       created_at,
     });
 
+    const fullfilable_variant_ids = order?.line_items
+      ?.filter((item) => item.fulfillable_quantity > 0)
+      .map((item) => `gid://shopify/ProductVariant/${item.variant_id}`);
+
+    const { count } = await supabase.from("product").select("*", { count: "exact", head: true }).eq("shop", shop).overlaps("variants", fullfilable_variant_ids);
+
+    const is_digital = count > 0;
+
     const { error } = await supabase.from("order").upsert(
       {
         shop,
@@ -63,11 +72,18 @@ export const POST = async (req) => {
         currency,
         total,
         cancelled_at,
+        is_digital,
       },
       {
         onConflict: "order_id",
       }
     );
+
+    // send email
+    await publish("SEND_ORDER_EMAIL", {
+      shop,
+      order,
+    });
 
     return Response.json(
       {
