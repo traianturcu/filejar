@@ -383,6 +383,7 @@ const ProductsPage = () => {
                     hasPrevious: page > 1,
                     onNext: () => setPage((prevPage) => prevPage + 1),
                     onPrevious: () => setPage((prevPage) => prevPage - 1),
+                    label: `${page} of ${Math.ceil(totalProducts / productsPerPage)}`,
                   }}
                 >
                   {rowMarkup}

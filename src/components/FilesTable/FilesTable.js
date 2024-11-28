@@ -156,6 +156,7 @@ const FilesTable = ({ refresh, setRefresh, showUploadModal, selectedFiles, setSe
           hasPrevious: page > 1,
           onNext: () => setPage((prevPage) => prevPage + 1),
           onPrevious: () => setPage((prevPage) => prevPage - 1),
+          label: `${page} of ${Math.ceil(totalFiles / filesPerPage)}`,
         }}
         onSelectionChange={handleSelectionChange}
         selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}

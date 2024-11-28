@@ -193,6 +193,7 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
               hasPrevious: page > 1,
               onNext: () => setPage((prevPage) => prevPage + 1),
               onPrevious: () => setPage((prevPage) => prevPage - 1),
+              label: `${page} of ${Math.ceil(totalFiles / filesPerPage)}`,
             }}
             selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
             bulkActions={[
