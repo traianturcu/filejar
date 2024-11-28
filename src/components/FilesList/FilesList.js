@@ -1,6 +1,23 @@
 "use client";
 
-import { Banner, BlockStack, Box, Button, Card, EmptyState, Filters, InlineStack, ResourceItem, ResourceList, Text } from "@shopify/polaris";
+import {
+  Banner,
+  Bleed,
+  BlockStack,
+  Box,
+  Button,
+  Card,
+  EmptyState,
+  Filters,
+  IndexFilters,
+  IndexTable,
+  InlineStack,
+  ResourceItem,
+  ResourceList,
+  Text,
+  useIndexResourceState,
+  useSetIndexFiltersMode,
+} from "@shopify/polaris";
 import { useEffect, useState } from "react";
 import useDebounce from "@/lib/utils/useDebounce";
 import { filesPerPage } from "@/constants/files";
@@ -12,46 +29,58 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedItems, setSelectedItems] = useState([]);
   const [totalFiles, setTotalFiles] = useState(0);
   const [page, setPage] = useState(1);
-  const [sortValue, setSortValue] = useState("created_at-desc");
   const [showError, setShowError] = useState(false);
   const [errorContent, setErrorContent] = useState("");
   const shopify = useAppBridge();
+  const { mode, setMode } = useSetIndexFiltersMode();
+  const [sortSelected, setSortSelected] = useState(["created_at desc"]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const sortOptions = [
+    { label: "Date", value: "created_at asc", directionLabel: "Ascending" },
+    { label: "Date", value: "created_at desc", directionLabel: "Descending" },
+    { label: "Name", value: "name asc", directionLabel: "Ascending" },
+    { label: "Name", value: "name desc", directionLabel: "Descending" },
+    { label: "Size", value: "size asc", directionLabel: "Ascending" },
+    { label: "Size", value: "size desc", directionLabel: "Descending" },
+  ];
+
+  const { selectedResources, allResourcesSelected, handleSelectionChange } = useIndexResourceState(items);
 
   useEffect(() => {
     const fetchFiles = async () => {
       setLoading(true);
 
-      const [sortBy, sortOrder] = sortValue.split("-");
+      const [sortBy, sortOrder] = sortSelected?.[0]?.split(" ");
       const res = await fetch(`/api/files/search?search=${debouncedSearchTerm}&page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, { cache: "no-store" });
       const { files, count } = await res.json();
-      setItems(files);
+      setItems(files.map((file) => ({ ...file, id: file.name })));
       setTotalFiles(count);
 
       setLoading(false);
     };
 
     fetchFiles();
-  }, [debouncedSearchTerm, page, sortValue, refresh]);
+  }, [debouncedSearchTerm, page, sortSelected, refresh]);
 
   useEffect(() => {
     if (refresh) {
       setPage(1);
       setSearchTerm("");
-      setSelectedItems([]);
-      setSortValue("created_at-desc");
+      setSortSelected(["created_at desc"]);
       setRefresh(false);
+      handleSelectionChange([]);
     }
-  }, [setRefresh, refresh]);
+  }, [setRefresh, refresh, handleSelectionChange]);
 
   const deleteFiles = async () => {
     setLoading(true);
     hideDeleteConfirmationModal();
-    const ids = selectedItems.map((id) => id);
+    const ids = selectedResources.map((id) => id);
+    console.log({ ids });
     const res = await fetch("/api/files/delete", {
       method: "POST",
       headers: {
@@ -124,110 +153,79 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
       )}
 
       <Card roundedAbove="sm">
-        <ResourceList
-          items={items}
-          emptyState={emptyStateMarkup}
-          filterControl={
-            <Filters
-              queryValue={searchTerm}
-              onQueryChange={setSearchTerm}
-              onQueryClear={() => setSearchTerm("")}
-              onClearAll={() => setSearchTerm("")}
-              filters={[]}
-              appliedFilters={[]}
-            />
-          }
-          sortOptions={[
-            { label: "Latest", value: "created_at-desc" },
-            { label: "Oldest", value: "created_at-asc" },
-            { label: "Name A-Z", value: "name-asc" },
-            { label: "Name Z-A", value: "name-desc" },
-            { label: "Large to Small", value: "size-desc" },
-            { label: "Small to Large", value: "size-asc" },
-          ]}
-          sortValue={sortValue}
-          onSortChange={setSortValue}
-          renderItem={(item) => {
-            const { name, originalFileName, size, created_at, mimetype } = item;
-
-            return (
-              <ResourceItem
-                id={name}
-                key={name}
+        <Bleed
+          marginInline="400"
+          marginBlock="400"
+        >
+          <IndexFilters
+            queryValue={searchTerm}
+            queryPlaceholder="Search files"
+            onQueryChange={setSearchTerm}
+            onQueryClear={() => setSearchTerm("")}
+            onClearAll={() => setSearchTerm("")}
+            tabs={[]}
+            mode={mode}
+            setMode={setMode}
+            onModeChange={setMode}
+            sortOptions={sortOptions}
+            sortSelected={sortSelected}
+            onSort={setSortSelected}
+            canCreateNewView={false}
+            filters={[]}
+            appliedFilters={[]}
+            hideFilters={true}
+            filteringAccessibilityLabel="Search (F)"
+            cancelAction={{
+              onAction: () => setSearchTerm(""),
+              disabled: false,
+              loading: false,
+            }}
+          />
+          <IndexTable
+            resourceName={{ singular: "file", plural: "files" }}
+            itemCount={items.length}
+            onSelectionChange={handleSelectionChange}
+            headings={[{ title: "File" }, { title: "Size" }, { title: "Date" }]}
+            loading={loading}
+            emptyState={emptyStateMarkup}
+            pagination={{
+              hasNext: totalFiles > page * filesPerPage,
+              hasPrevious: page > 1,
+              onNext: () => setPage((prevPage) => prevPage + 1),
+              onPrevious: () => setPage((prevPage) => prevPage - 1),
+            }}
+            selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
+            bulkActions={[
+              {
+                content: "Delete",
+                onAction: showDeleteConfirmationModal,
+              },
+            ]}
+          >
+            {items.map(({ id, originalFileName, size, created_at, mimetype }, index) => (
+              <IndexTable.Row
+                id={id}
+                key={id}
+                selected={selectedResources.includes(id)}
+                position={index}
               >
-                <InlineStack
-                  gap="200"
-                  align="space-between"
-                  blockAlign="center"
-                  wrap={false}
-                >
-                  <BlockStack
-                    gap="200"
-                    align="center"
-                    inlineAlign="start"
-                  >
+                <IndexTable.Cell>
+                  <BlockStack gap="50">
                     <Text
-                      as="span"
-                      variant="bodyLg"
+                      variant="bodyMd"
                       fontWeight="bold"
                     >
                       {originalFileName}
                     </Text>
-                    <Text
-                      as="span"
-                      variant="bodySm"
-                    >
-                      {mimetype}
-                    </Text>
+                    <Text variant="bodySm">{mimetype}</Text>
                   </BlockStack>
-                  <InlineStack
-                    gap="400"
-                    align="center"
-                    wrap={false}
-                  >
-                    <Text
-                      as="span"
-                      variant="bodySm"
-                    >
-                      {formatFileSize(size)}
-                    </Text>
-                    <Text
-                      as="span"
-                      variant="bodySm"
-                    >
-                      {formatDateTime(created_at)}
-                    </Text>
-                  </InlineStack>
-                </InlineStack>
-              </ResourceItem>
-            );
-          }}
-          resourceName={{ singular: "file", plural: "files" }}
-          loading={loading}
-          bulkActions={[
-            {
-              content: "Delete",
-              onAction: showDeleteConfirmationModal,
-              destructive: true,
-            },
-          ]}
-          selectedItems={selectedItems}
-          onSelectionChange={setSelectedItems}
-          resolveItemId={(item) => item.name}
-          idForItem={(item) => item.name}
-          totalItemsCount={totalFiles}
-          pagination={
-            items?.length
-              ? {
-                  hasPrevious: page > 1,
-                  hasNext: totalFiles > page * filesPerPage,
-                  onNext: () => setPage((prevPage) => prevPage + 1),
-                  onPrevious: () => setPage((prevPage) => prevPage - 1),
-                  label: `${page} of ${Math.ceil(totalFiles / filesPerPage)}`,
-                }
-              : null
-          }
-        />
+                </IndexTable.Cell>
+                <IndexTable.Cell>{formatFileSize(size)}</IndexTable.Cell>
+                <IndexTable.Cell>{formatDateTime(created_at)}</IndexTable.Cell>
+              </IndexTable.Row>
+            ))}
+          </IndexTable>
+        </Bleed>
       </Card>
       <Modal id="confirm-delete-modal">
         <TitleBar title="Delete Files">
