@@ -26,4 +26,13 @@ export const events = [
       },
     ],
   },
+  {
+    name: "FULFILL_ITEMS",
+    subscribers: [
+      {
+        handler: "api/subscriber/fulfillItems",
+        type: "api",
+      },
+    ],
+  },
 ];

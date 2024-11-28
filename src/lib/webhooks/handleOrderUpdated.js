@@ -78,6 +78,12 @@ export const handleOrderUpdated = async (shop, order) => {
       shop,
       order,
     });
+
+    // fulfill items
+    await publish("FULFILL_ITEMS", {
+      order_id,
+      shop,
+    });
   } catch (error) {
     console.error("Error in handleOrderUpdated", {
       error,

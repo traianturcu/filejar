@@ -85,6 +85,12 @@ export const POST = async (req) => {
       order,
     });
 
+    // fulfill items
+    await publish("FULFILL_ITEMS", {
+      order_id,
+      shop,
+    });
+
     return Response.json(
       {
         success: true,
