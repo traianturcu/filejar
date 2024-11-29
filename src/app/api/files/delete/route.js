@@ -39,11 +39,7 @@ export const POST = async (request) => {
 
     const supabase = createClient(process.env.SUPABASE_URL, token);
 
-    console.log(`Deleting files: ${ids}`);
-
     const { data: files, error } = await supabase.storage.from("uploads").remove(ids);
-
-    console.log(`Deletion result:`, { files, error });
 
     if (error) {
       throw new Error(error.message);

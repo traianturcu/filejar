@@ -80,7 +80,6 @@ const FilesList = ({ showUploadModal, refresh, setRefresh }) => {
     setLoading(true);
     hideDeleteConfirmationModal();
     const ids = selectedResources.map((id) => id);
-    console.log({ ids });
     const res = await fetch("/api/files/delete", {
       method: "POST",
       headers: {

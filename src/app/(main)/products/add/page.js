@@ -264,7 +264,7 @@ const ProductAddPage = () => {
                 <FormLayout>
                   <Checkbox
                     label="Auto-fulfill the product"
-                    helpText="Automatically fulfill the product when a customer buys it (suitable for digital products, with no physical component)."
+                    helpText={`Automatically fulfill the product when a customer buys it (you need to also uncheck "This is a physical product" under Shipping settings of the product for this to work).`}
                     checked={autoFulfill}
                     onChange={() => setAutoFulfill(!autoFulfill)}
                   />

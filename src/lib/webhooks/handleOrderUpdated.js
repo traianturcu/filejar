@@ -29,11 +29,9 @@ export const handleOrderUpdated = async (shop, order) => {
     const total = order.current_total_price_set?.shop_money?.amount ? parseFloat(order.current_total_price_set.shop_money.amount) : 0;
     const cancelled_at = order.cancelled_at ? new Date(order.cancelled_at).toISOString() : null;
 
-    const fullfilable_variant_ids = order?.line_items
-      ?.filter((item) => item.fulfillable_quantity > 0)
-      .map((item) => `gid://shopify/ProductVariant/${item.variant_id}`);
+    const variant_ids = order?.line_items.map((item) => `gid://shopify/ProductVariant/${item.variant_id}`);
 
-    const { count } = await supabase.from("product").select("*", { count: "exact", head: true }).eq("shop", shop).overlaps("variants", fullfilable_variant_ids);
+    const { count } = await supabase.from("product").select("*", { count: "exact", head: true }).eq("shop", shop).overlaps("variants", variant_ids);
 
     const is_digital = count > 0;
 
@@ -77,12 +75,6 @@ export const handleOrderUpdated = async (shop, order) => {
     await publish("SEND_ORDER_EMAIL", {
       shop,
       order,
-    });
-
-    // fulfill items
-    await publish("FULFILL_ITEMS", {
-      order_id,
-      shop,
     });
   } catch (error) {
     console.error("Error in handleOrderUpdated", {

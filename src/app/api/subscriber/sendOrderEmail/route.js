@@ -1,6 +1,8 @@
 import { getShop } from "@/lib/shop";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid";
+import { publish } from "@/lib/pubsub";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -31,9 +33,18 @@ export const POST = async (req) => {
       return Response.json({ skipped: true, reason: "not digital" }, { status: 200 });
     }
 
-    await supabase.from("order").update({ initial_email_sent: true }).eq("order_id", order.id).eq("shop", shop);
+    const email_sender = uuidv4();
 
-    console.log("=== passed all checks ===");
+    await supabase.from("order").update({ initial_email_sent: true, email_sender }).eq("order_id", order.id).eq("shop", shop);
+
+    // passed all checks
+    // wait for 2 seconds
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // to prevent duplicate emails, check that the email_sender is this service
+    const { data: email_sender_data } = await supabase.from("order").select("email_sender").eq("email_sender", email_sender).eq("shop", shop).single();
+    if (!email_sender_data) {
+      return Response.json({ skipped: true, reason: "email sending assigned to another service" }, { status: 200 });
+    }
 
     /* OPTION 1: POSTMARK */
     const smtp_host = process.env.POSTMARK_HOST;
@@ -52,6 +63,7 @@ export const POST = async (req) => {
     const customer_email = order?.customer?.email;
     const customer_first_name = order?.customer?.first_name;
     const order_name = order?.name;
+    const order_id = order?.id;
 
     const transporter = nodemailer.createTransport({
       host: smtp_host,
@@ -61,6 +73,8 @@ export const POST = async (req) => {
         pass: smtp_pass,
       },
     });
+
+    const email_date = new Date().toISOString();
 
     const mailOptions = {
       from: `"${shop_name}" <${smtp_email}>`,
@@ -73,14 +87,18 @@ export const POST = async (req) => {
 
       Best regards,
       ${shop_name} Team
+      ${email_date}
+      Powered by ${process.env.APP_NAME}
       `,
       html: `
       <p>Hello ${customer_first_name},</p>
       <br />
       <p>Your order ${order_name} has been paid for. You can download your content below.</p>
-
+      <br/>
       <p>Best regards,</p>
       <p>${shop_name} Team</p>
+      <p>${email_date}</p>
+      <p>Powered by ${process.env.APP_NAME}</p>
       `,
       headers: {
         "X-PM-Message-Stream": "outbound",
@@ -90,13 +108,17 @@ export const POST = async (req) => {
     await new Promise((resolve, reject) => {
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          console.error("Error sending email", error);
           reject(error);
         } else {
-          console.log("Email sent", info);
           resolve(info);
         }
       });
+    });
+
+    // fulfill items
+    await publish("FULFILL_ITEMS", {
+      order_id,
+      shop,
     });
 
     return Response.json(

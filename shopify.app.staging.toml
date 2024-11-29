@@ -13,7 +13,7 @@ direct_api_mode = "offline"
 embedded_app_direct_api_access = true
 
 [access_scopes]
-scopes = "read_products,write_products,read_orders"
+scopes = "read_products,write_products,read_orders,write_assigned_fulfillment_orders"
 
 [auth]
 redirect_urls = []
