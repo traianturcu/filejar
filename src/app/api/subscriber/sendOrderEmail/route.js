@@ -64,6 +64,12 @@ export const POST = async (req) => {
     const customer_first_name = order?.customer?.first_name;
     const order_name = order?.name;
     const order_id = order?.id;
+    const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${currentOrder?.id}`;
+
+    const product_ids = order?.line_items?.map((item) => item?.product_id);
+    const variant_ids = order?.line_items?.map((item) => `gid://shopify/ProductVariant/${item?.variant_id}`);
+
+    const { data: products } = await supabase.from("product").select("*").eq("shop", shop).overlaps("variants", variant_ids);
 
     const transporter = nodemailer.createTransport({
       host: smtp_host,
@@ -83,22 +89,60 @@ export const POST = async (req) => {
       text: `
       Hello ${customer_first_name},
 
-      Your order ${order_name} has been paid for. You can download your content below.
+      Thank you for purchasing from ${shop_name}! You can download your content for order ${order_name} using the button below.
 
-      Best regards,
+      Download Link: ${download_link}
+
+      Your order includes the following products:
+      ${products?.map((product) => `${product?.title} (${product?.files?.length ?? 0} file${product?.files?.length !== 1 ? "s" : ""})`).join("\n")}
+
+      Thank you,
       ${shop_name} Team
-      ${email_date}
+
+      If you have any questions, please contact us at ${shopData?.details?.email}
+
       Powered by ${process.env.APP_NAME}
       `,
       html: `
-      <p>Hello ${customer_first_name},</p>
-      <br />
-      <p>Your order ${order_name} has been paid for. You can download your content below.</p>
-      <br/>
-      <p>Best regards,</p>
-      <p>${shop_name} Team</p>
-      <p>${email_date}</p>
-      <p>Powered by ${process.env.APP_NAME}</p>
+      <div style="max-width: 600px; margin: 20px auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';font-size:16px;">
+        <table style="width: 100%;border:none;margin-bottom:20px;font-size:18px;font-weight:600;">
+          <tr>
+            <td>${shop_name}</td>
+            <td align="right">${order_name}</td>
+          </tr>
+        </table>
+        <p>Hello ${customer_first_name},</p>
+        <p>Thank you for purchasing from <b>${shop_name}</b>! You can download your content for <b>order ${order_name}</b> using the button below.</p>
+        <div style="text-align: center;">
+          <a href="${download_link}" style="display: inline-block; padding: 10px 20px; font-size: 20px; font-weight: 600; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; margin: 20px;">Download Content</a>
+        </div>
+        <p>Your order includes the following products:</p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom:40px; margin-top:20px;">
+          ${products
+            ?.map(
+              (product) => `<tr>
+            <td style="width:50px; padding: 10px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;"><img src="${
+              product?.image ??
+              "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjwhLS0gVXBsb2FkZWQgdG86IFNWRyBSZXBvLCB3d3cuc3ZncmVwby5jb20sIEdlbmVyYXRvcjogU1ZHIFJlcG8gTWl4ZXIgVG9vbHMgLS0+Cjxzdmcgd2lkdGg9IjgwMHB4IiBoZWlnaHQ9IjgwMHB4IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQogICAgPHBhdGggZD0ibSA0IDEgYyAtMS42NDQ1MzEgMCAtMyAxLjM1NTQ2OSAtMyAzIHYgMSBoIDEgdiAtMSBjIDAgLTEuMTA5Mzc1IDAuODkwNjI1IC0yIDIgLTIgaCAxIHYgLTEgeiBtIDIgMCB2IDEgaCA0IHYgLTEgeiBtIDUgMCB2IDEgaCAxIGMgMS4xMDkzNzUgMCAyIDAuODkwNjI1IDIgMiB2IDEgaCAxIHYgLTEgYyAwIC0xLjY0NDUzMSAtMS4zNTU0NjkgLTMgLTMgLTMgeiBtIC01IDQgYyAtMC41NTA3ODEgMCAtMSAwLjQ0OTIxOSAtMSAxIHMgMC40NDkyMTkgMSAxIDEgcyAxIC0wLjQ0OTIxOSAxIC0xIHMgLTAuNDQ5MjE5IC0xIC0xIC0xIHogbSAtNSAxIHYgNCBoIDEgdiAtNCB6IG0gMTMgMCB2IDQgaCAxIHYgLTQgeiBtIC00LjUgMiBsIC0yIDIgbCAtMS41IC0xIGwgLTIgMiB2IDAuNSBjIDAgMC41IDAuNSAwLjUgMC41IDAuNSBoIDcgcyAwLjQ3MjY1NiAtMC4wMzUxNTYgMC41IC0wLjUgdiAtMSB6IG0gLTguNSAzIHYgMSBjIDAgMS42NDQ1MzEgMS4zNTU0NjkgMyAzIDMgaCAxIHYgLTEgaCAtMSBjIC0xLjEwOTM3NSAwIC0yIC0wLjg5MDYyNSAtMiAtMiB2IC0xIHogbSAxMyAwIHYgMSBjIDAgMS4xMDkzNzUgLTAuODkwNjI1IDIgLTIgMiBoIC0xIHYgMSBoIDEgYyAxLjY0NDUzMSAwIDMgLTEuMzU1NDY5IDMgLTMgdiAtMSB6IG0gLTggMyB2IDEgaCA0IHYgLTEgeiBtIDAgMCIgZmlsbD0iIzJlMzQzNCIgZmlsbC1vcGFjaXR5PSIwLjM0OTAyIi8+DQo8L3N2Zz4="
+            }" style="width: 50px; height: 50px; object-fit: cover;border-radius:8px;" /></td>
+            <td style="padding: 10px; font-size:17px; font-weight:600; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">${product?.title}</td>
+            <td style="padding: 10px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">${product?.files?.length ?? 0} file${
+                product?.files?.length !== 1 ? "s" : ""
+              }</td>
+          </tr>`
+            )
+            .join("")}
+        </table>
+        <p>Thank you,<br>${shop_name} Team</p>
+        <hr style="border: 1px solid #ccc; margin: 50px 0 20px 0;" />
+        <p>If you have any questions, please contact us at <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="mailto:${
+          shopData?.details?.email
+        }">${shopData?.details?.email}</a></p>
+        <br/><br/>
+        <p style="text-align: center; font-size: 12px; color: #666;">Powered by <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="https://filejar.com">${
+          process.env.APP_NAME
+        }</a></p>
+      </div>
       `,
       headers: {
         "X-PM-Message-Stream": "outbound",

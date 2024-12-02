@@ -312,6 +312,8 @@ const ProductsPage = () => {
     </EmptyState>
   );
 
+  const paginationLabel = totalProducts > productsPerPage ? `${page} of ${Math.ceil(totalProducts / productsPerPage)}` : ``;
+
   return (
     <Page
       title="Products"
@@ -383,7 +385,7 @@ const ProductsPage = () => {
                     hasPrevious: page > 1,
                     onNext: () => setPage((prevPage) => prevPage + 1),
                     onPrevious: () => setPage((prevPage) => prevPage - 1),
-                    label: `${page} of ${Math.ceil(totalProducts / productsPerPage)}`,
+                    label: paginationLabel,
                   }}
                 >
                   {rowMarkup}

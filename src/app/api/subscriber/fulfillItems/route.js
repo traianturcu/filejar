@@ -91,6 +91,16 @@ export const POST = async (req) => {
 
     const fulfillable_line_items = lineItems?.filter((item) => variant_ids.includes(item.variant.id));
 
+    if (fulfillable_line_items.length === 0) {
+      return Response.json(
+        {
+          success: false,
+          message: "No fulfillable line items found",
+        },
+        { status: 200 }
+      );
+    }
+
     const query = `mutation fulfillmentCreate($fulfillment: FulfillmentInput!) {
       fulfillmentCreate(fulfillment: $fulfillment) {
         fulfillment {
