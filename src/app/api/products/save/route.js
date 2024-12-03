@@ -6,7 +6,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export const POST = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");
-    const { autoFulfill, limitDownloads, limitDownloadTime, selectedProduct, selectedFiles, isEdit } = await request.json();
+    const { autoFulfill, limitDownloads, limitDownloadTime, selectedProduct, selectedFiles, isEdit, id } = await request.json();
 
     if (!shop) {
       throw new Error("Missing shop");
@@ -18,6 +18,24 @@ export const POST = async (request) => {
 
     if (isEdit) {
       // update product
+      const { dataUpdate, errorUpdate } = await supabase
+        .from("product")
+        .update({
+          settings: { autoFulfill, limitDownloads, limitDownloadTime },
+          files: selectedFiles,
+        })
+        .eq("shop", shop)
+        .eq("id", id);
+
+      if (errorUpdate) {
+        throw new Error(errorUpdate.message);
+      }
+
+      if (dataUpdate?.length === 0) {
+        throw new Error("Failed to update product");
+      }
+
+      return Response.json({ success: true }, { status: 200 });
     } else {
       // create product
       // if any of the variants already exist in a product, throw an error

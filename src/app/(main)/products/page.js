@@ -240,7 +240,7 @@ const ProductsPage = () => {
                 variant="secondary"
                 icon={EditIcon}
                 size="micro"
-                onClick={() => router.push(`/products/${id}`)}
+                onClick={() => router.push(`/products/edit/${id}`)}
               />
             </Tooltip>
             <Tooltip content="View">
@@ -336,7 +336,7 @@ const ProductsPage = () => {
                   content: "Contact us",
                   icon: ChatIcon,
                   onAction: () => {
-                    window.Intercom("showNewMessage", "I'm having an issue archiving a product");
+                    window.Intercom("showNewMessage", "I'm having an issue with a product");
                   },
                 }}
               >
