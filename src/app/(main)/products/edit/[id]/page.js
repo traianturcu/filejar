@@ -28,7 +28,6 @@ const ProductEditPage = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      shopify.loading(true);
       const res = await fetch(`/api/products/get?id=${id}`);
       const { product } = await res.json();
 
@@ -48,7 +47,6 @@ const ProductEditPage = () => {
         setLimitDownloadTime(product?.settings?.limitDownloadTime ?? false);
         setSelectedFiles(product?.files ?? []);
       }
-      shopify.loading(false);
     };
 
     fetchProduct();
