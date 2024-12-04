@@ -17,6 +17,8 @@ export const POST = async (req) => {
     // get order from supabase
     const { data: currentOrder } = await supabase.from("order").select("*").eq("order_id", order.id).eq("shop", shop).single();
 
+    const events = currentOrder?.events ?? [];
+
     if (currentOrder?.initial_email_sent) {
       return Response.json({ skipped: true, reason: "email already sent" }, { status: 200 });
     }
@@ -45,6 +47,13 @@ export const POST = async (req) => {
     if (!email_sender_data) {
       return Response.json({ skipped: true, reason: "email sending assigned to another service" }, { status: 200 });
     }
+
+    events.push({
+      action: "Email sent",
+      created_at: new Date().toISOString(),
+    });
+
+    await supabase.from("order").update({ events }).eq("order_id", order.id).eq("shop", shop);
 
     /* OPTION 1: POSTMARK */
     const smtp_host = process.env.POSTMARK_HOST;

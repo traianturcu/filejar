@@ -19,7 +19,7 @@ export const POST = async (req) => {
     const access = existingOrder?.access ?? true;
     const status = existingOrder?.status ?? null;
 
-    const created_at = order.created_at;
+    const created_at = order.created_at ? new Date(order.created_at).toISOString() : null;
     const customer_id = order.customer?.id;
     const customer_email = order.customer?.email;
     const customer_first_name = order.customer?.first_name;

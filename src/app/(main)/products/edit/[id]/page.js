@@ -1,7 +1,7 @@
 "use client";
 
 import { Page, Layout, Text, Card, BlockStack, Badge, InlineStack, Button, FormLayout, Checkbox, Box, Banner } from "@shopify/polaris";
-import { FileIcon, ProductIcon, UploadIcon, ArchiveIcon, StatusActiveIcon, DeleteIcon } from "@shopify/polaris-icons";
+import { FileIcon, UploadIcon, ArchiveIcon, StatusActiveIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { useParams, useRouter } from "next/navigation";
 import { Modal, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useEffect } from "react";

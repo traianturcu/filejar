@@ -37,7 +37,7 @@ export const handleOrderUpdated = async (shop, order) => {
 
     events.push({
       action: "Order updated",
-      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     });
 
     await supabase.from("order").upsert(

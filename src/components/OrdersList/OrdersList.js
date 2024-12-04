@@ -18,6 +18,7 @@ import {
 import { ExternalSmallIcon, ViewIcon } from "@shopify/polaris-icons";
 import useDebounce from "@/lib/utils/useDebounce";
 import { ordersPerPage } from "@/constants/orders";
+import { useRouter } from "next/navigation";
 
 const OrdersList = () => {
   const [items, setItems] = useState([]);
@@ -29,6 +30,8 @@ const OrdersList = () => {
   const { mode, setMode } = useSetIndexFiltersMode();
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -182,7 +185,9 @@ const OrdersList = () => {
           <BlockStack gap="200">
             <Link
               monochrome
-              onClick={() => {}}
+              onClick={() => {
+                router.push(`/orders/manage/${order_id}`);
+              }}
             >
               <Text
                 variant="bodyMd"
@@ -257,7 +262,9 @@ const OrdersList = () => {
               <Button
                 variant="primary"
                 icon={ViewIcon}
-                onClick={() => {}}
+                onClick={() => {
+                  router.push(`/orders/manage/${order_id}`);
+                }}
               />
             </Tooltip>
             <Tooltip content="View order in Shopify">
@@ -273,6 +280,8 @@ const OrdersList = () => {
       </IndexTable.Row>
     )
   );
+
+  const paginationLabel = totalOrders > 0 ? `${page} of ${Math.ceil(totalOrders / ordersPerPage)}` : "";
 
   return (
     <Card roundedAbove="sm">
@@ -312,7 +321,7 @@ const OrdersList = () => {
           hasPrevious: page > 1,
           onNext: () => setPage((prevPage) => prevPage + 1),
           onPrevious: () => setPage((prevPage) => prevPage - 1),
-          label: `${page} of ${Math.ceil(totalOrders / ordersPerPage)}`,
+          label: paginationLabel,
         }}
       >
         {rowMarkup}

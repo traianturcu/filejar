@@ -28,12 +28,6 @@ export const GET = async (request) => {
 
     const ascending = sortOrder === "asc";
 
-    const shopData = await getShop(shop);
-
-    if (!shopData.uuid) {
-      throw new Error("Shop UUID not found");
-    }
-
     const escapedSearch = search.replace(/([%_\\])/g, "\\$1");
 
     const { data, count, error } = await supabase
