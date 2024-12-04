@@ -1,71 +1,47 @@
-import { getShop } from "@/lib/shop";
 import { createClient } from "@supabase/supabase-js";
-import { v4 as uuidv4 } from "uuid";
-import { publish } from "@/lib/pubsub";
 import { sendEmail } from "@/lib/email";
+import { getShop } from "@/lib/shop";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-export const POST = async (req) => {
+export const GET = async (request) => {
   try {
-    const { Message } = await req.json();
-    const { shop, order } = JSON.parse(Message);
-    if (!shop || !order) {
-      throw new Error("Shop or order not found");
+    const shop = request?.headers?.get("X-Shop");
+    const id = request?.nextUrl?.searchParams?.get("id");
+
+    if (!shop) {
+      throw new Error("Missing shop");
     }
 
-    // get order from supabase
-    const { data: currentOrder } = await supabase.from("order").select("*").eq("order_id", order.id).eq("shop", shop).single();
+    const { data: order } = await supabase.from("order").select("*").eq("order_id", id).eq("shop", shop).single();
 
-    const events = currentOrder?.events ?? [];
-
-    if (currentOrder?.initial_email_sent) {
-      return Response.json({ skipped: true, reason: "email already sent" }, { status: 200 });
+    if (!order) {
+      throw new Error("Order not found");
     }
 
-    if (order.financial_status !== "paid") {
-      return Response.json({ skipped: true, reason: "not paid" }, { status: 200 });
-    }
-
-    if (currentOrder?.risk_level === "high") {
-      return Response.json({ skipped: true, reason: "high risk" }, { status: 200 });
-    }
-
-    if (!currentOrder?.is_digital) {
-      return Response.json({ skipped: true, reason: "not digital" }, { status: 200 });
-    }
-
-    const email_sender = uuidv4();
-
-    await supabase.from("order").update({ initial_email_sent: true, email_sender }).eq("order_id", order.id).eq("shop", shop);
-
-    // passed all checks
-    // wait for 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    // to prevent duplicate emails, check that the email_sender is this service
-    const { data: email_sender_data } = await supabase.from("order").select("email_sender").eq("email_sender", email_sender).eq("shop", shop).single();
-    if (!email_sender_data) {
-      return Response.json({ skipped: true, reason: "email sending assigned to another service" }, { status: 200 });
-    }
+    const events = order?.events ?? [];
 
     events.push({
-      action: "Email sent",
+      action: "Email resent",
       created_at: new Date().toISOString(),
     });
 
-    await supabase.from("order").update({ events }).eq("order_id", order.id).eq("shop", shop);
+    await supabase.from("order").update({ events }).eq("order_id", id).eq("shop", shop);
+
+    const variant_ids = order?.products?.map((item) => `gid://shopify/ProductVariant/${item?.variant_id}`);
+
+    const { data: products } = await supabase.from("product").select("*").eq("shop", shop).overlaps("variants", variant_ids);
 
     const shopData = await getShop(shop);
     const shop_name = shopData?.details?.name;
-    const customer_email = order?.customer?.email;
-    const customer_first_name = order?.customer?.first_name;
-    const order_name = order?.name;
-    const order_id = order?.id;
-    const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${currentOrder?.id}`;
 
-    const variant_ids = order?.line_items?.map((item) => `gid://shopify/ProductVariant/${item?.variant_id}`);
-
-    const { data: products } = await supabase.from("product").select("*").eq("shop", shop).overlaps("variants", variant_ids);
+    const customer_email = order?.customer_email;
+    const customer_first_name = order?.customer_first_name;
+    const order_name = order?.order_name;
+    const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${order?.id}`;
 
     const from_name = shop_name;
     const to = customer_email;
@@ -131,26 +107,24 @@ export const POST = async (req) => {
 
     await sendEmail({ to, from_name, subject, html, text });
 
-    // fulfill items
-    await publish("FULFILL_ITEMS", {
-      order_id,
-      shop,
-    });
-
     return Response.json(
       {
         success: true,
+        events,
       },
-      { status: 200 }
+      {
+        status: 200,
+      }
     );
   } catch (error) {
-    console.error("Error handling orderPaidToDB", error);
     return Response.json(
       {
         success: false,
-        error,
+        error: error.message,
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 };

@@ -2,6 +2,7 @@
 
 import formatDateTime from "@/lib/utils/formatDateTime";
 import formatFileSize from "@/lib/utils/formatFileSize";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { Badge, Bleed, BlockStack, Box, Button, Card, Icon, InlineStack, Layout, Link, Page, Spinner, Text } from "@shopify/polaris";
 import { CheckCircleIcon, DisabledIcon, EmailIcon, ExternalSmallIcon, FileIcon, ResetIcon } from "@shopify/polaris-icons";
 import { useParams, useRouter } from "next/navigation";
@@ -17,6 +18,7 @@ const OrderManagePage = () => {
   const [download_link, setDownloadLink] = useState(null);
 
   const router = useRouter();
+  const shopify = useAppBridge();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -32,6 +34,26 @@ const OrderManagePage = () => {
 
     fetchOrder();
   }, [id]);
+
+  const resendEmail = async () => {
+    try {
+      const res = await fetch(`/api/orders/resendEmail?id=${id}`);
+      const { success, events } = await res.json();
+      if (success) {
+        shopify.toast.show("Email resent");
+        setOrder({
+          ...order,
+          events,
+        });
+      } else {
+        shopify.toast.show("Failed to resend email", {
+          tone: "critical",
+        });
+      }
+    } catch (error) {
+      shopify.toast.show("Failed to resend email");
+    }
+  };
 
   const fulfillment_badges = {
     fulfilled: {
@@ -107,9 +129,11 @@ const OrderManagePage = () => {
 
   const event_list = [
     ...new Set(
-      order?.events?.map((event) => {
-        return `${event.action} on ${formatDateTime(event.created_at)}`;
-      })
+      order?.events
+        ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        ?.map((event) => {
+          return `${event.action} on ${formatDateTime(event.created_at)}`;
+        })
     ),
   ];
 
@@ -169,7 +193,7 @@ const OrderManagePage = () => {
           content: "Resend email",
           icon: EmailIcon,
           onClick: () => {
-            console.log("Resend email");
+            resendEmail();
           },
         },
       ]}
@@ -508,12 +532,6 @@ const OrderManagePage = () => {
                 >
                   Order History
                 </Text>
-                <Text
-                  as="p"
-                  variant="bodyMd"
-                >
-                  Order placed on {formatDateTime(order?.created_at)}
-                </Text>
                 {event_list?.map((event, index) => {
                   return (
                     <Text
@@ -525,6 +543,12 @@ const OrderManagePage = () => {
                     </Text>
                   );
                 })}
+                <Text
+                  as="p"
+                  variant="bodyMd"
+                >
+                  Order placed on {formatDateTime(order?.created_at)}
+                </Text>
               </BlockStack>
             </Card>
             <Card roundedAbove="sm">
