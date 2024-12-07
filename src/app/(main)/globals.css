@@ -73,4 +73,13 @@ h6 {
 .Polaris-EmptyState__ImageContainer img {
   max-width: 250px;
 }
+.Polaris-OptionList-Option__Icon {
+  display: none;
+}
 /* End Polaris Tweaks */
+
+.email-link {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 600;
+}

@@ -40,6 +40,7 @@ export const GET = async (request) => {
     details.offers = data.offers;
     details.usage = data.usage;
     details.last_usage_check = data.last_usage_check;
+    details.settings = data.settings;
 
     return Response.json({
       success: true,

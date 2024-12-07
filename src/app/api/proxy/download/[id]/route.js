@@ -31,8 +31,6 @@ export const GET = async (request, { params }) => {
 
     let products_html = ``;
 
-    console.log(order);
-
     if (order?.fraud_risk === "high") {
       return new Response(
         `<div style="text-align: center; font-size: 24px; font-weight: bold; margin: 40px;">This order has been marked as high risk and cannot be accessed.<br /> For further details, please contact us.</div>`,
