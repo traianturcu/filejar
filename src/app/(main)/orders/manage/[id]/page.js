@@ -15,6 +15,7 @@ const OrderManagePage = () => {
   const [products, setProducts] = useState([]);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resendEmailLoading, setResendEmailLoading] = useState(false);
   const [download_link, setDownloadLink] = useState(null);
 
   const router = useRouter();
@@ -37,6 +38,7 @@ const OrderManagePage = () => {
 
   const resendEmail = async () => {
     try {
+      setResendEmailLoading(true);
       const res = await fetch(`/api/orders/resendEmail?id=${id}`);
       const { success, events } = await res.json();
       if (success) {
@@ -52,6 +54,8 @@ const OrderManagePage = () => {
       }
     } catch (error) {
       shopify.toast.show("Failed to resend email");
+    } finally {
+      setResendEmailLoading(false);
     }
   };
 
@@ -195,6 +199,7 @@ const OrderManagePage = () => {
           onClick: () => {
             resendEmail();
           },
+          loading: resendEmailLoading,
         },
       ]}
       backAction={{

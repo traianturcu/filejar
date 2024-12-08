@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { publish } from "@/lib/pubsub";
 import { sendEmail } from "@/lib/email";
+import { email_template_defaults, replaceVariables } from "@/constants/emailTemplateDefaults";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -13,6 +14,13 @@ export const POST = async (req) => {
     if (!shop || !order) {
       throw new Error("Shop or order not found");
     }
+
+    console.log({ order });
+
+    order.order_name = order.order_number;
+    order.customer_first_name = order.customer?.first_name;
+    order.customer_last_name = order.customer?.last_name;
+    order.customer_email = order.customer?.email;
 
     // get order from supabase
     const { data: currentOrder } = await supabase.from("order").select("*").eq("order_id", order.id).eq("shop", shop).single();
@@ -56,10 +64,11 @@ export const POST = async (req) => {
     await supabase.from("order").update({ events }).eq("order_id", order.id).eq("shop", shop);
 
     const shopData = await getShop(shop);
-    const shop_name = shopData?.details?.name;
+
+    const emailTemplateSettings = shopData?.settings?.email_template;
+
     const customer_email = order?.customer?.email;
-    const customer_first_name = order?.customer?.first_name;
-    const order_name = order?.name;
+    const order_name = order?.order_number;
     const order_id = order?.id;
     const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${currentOrder?.id}`;
 
@@ -67,65 +76,95 @@ export const POST = async (req) => {
 
     const { data: products } = await supabase.from("product").select("*").eq("shop", shop).overlaps("variants", variant_ids);
 
-    const from_name = shop_name;
+    const from_name = replaceVariables(shopData?.settings?.email_template?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false);
     const to = customer_email;
-    const subject = `Download your content for order ${order_name}`;
+    const subject = replaceVariables(shopData?.settings?.email_template?.subject ?? email_template_defaults.subject, shopData?.details, order);
+
     const text = `
-      Hello ${customer_first_name},
+      ${replaceVariables(emailTemplateSettings?.greeting ?? email_template_defaults.greeting, shopData?.details, order, false)}
 
-      Thank you for purchasing from ${shop_name}! You can download your content for order ${order_name} using the button below.
+      ${replaceVariables(emailTemplateSettings?.body ?? email_template_defaults.body, shopData?.details, order, false)}
 
-      Download Link: ${download_link}
+      ${replaceVariables(emailTemplateSettings?.button_text ?? email_template_defaults.button_text, shopData?.details, order, false)}: ${download_link}
 
-      Your order includes the following products:
-      ${products?.map((product) => `${product?.title} (${product?.files?.length ?? 0} file${product?.files?.length !== 1 ? "s" : ""})`).join("\n")}
+      ${replaceVariables(emailTemplateSettings?.product_list_header ?? email_template_defaults.product_list_header, shopData?.details, order, false)}
+      ${products
+        ?.map(
+          (product) =>
+            `${product?.title} (${product?.files?.length ?? 0} ${replaceVariables(
+              emailTemplateSettings?.files_suffix ?? email_template_defaults.files_suffix,
+              shopData?.details,
+              order,
+              false
+            )})`
+        )
+        .join("\n")}
 
-      Thank you,
-      ${shop_name} Team
+      ${replaceVariables(emailTemplateSettings?.thank_you_text ?? email_template_defaults.thank_you_text, shopData?.details, order, false)}
+      ${replaceVariables(emailTemplateSettings?.thank_you_signature ?? email_template_defaults.thank_you_signature, shopData?.details, order, false)}
 
-      If you have any questions, please contact us at ${shopData?.details?.email}
+      ${replaceVariables(emailTemplateSettings?.footer ?? email_template_defaults.footer, shopData?.details, order, false)}
 
-      Powered by ${process.env.APP_NAME}
+      ${emailTemplateSettings?.show_powered_by !== false ? `Powered by ${process.env.APP_NAME}` : ""}
       `;
+
     const html = `
       <div style="max-width: 600px; margin: 20px auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';font-size:16px;">
+        ${
+          emailTemplateSettings?.logo_link
+            ? `<img src="${emailTemplateSettings?.logo_link}" alt="logo" width="${
+                emailTemplateSettings?.logo_size ?? "100%"
+              }" style="display: block; margin: 20px auto 20px auto;" />`
+            : ""
+        }
         <table style="width: 100%;border:none;margin-bottom:20px;font-size:18px;font-weight:600;">
           <tr>
-            <td>${shop_name}</td>
-            <td align="right">${order_name}</td>
+            <td>${replaceVariables(emailTemplateSettings?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false)}</td>
+            <td align="right">#${order_name}</td>
           </tr>
         </table>
-        <p>Hello ${customer_first_name},</p>
-        <p>Thank you for purchasing from <b>${shop_name}</b>! You can download your content for <b>order ${order_name}</b> using the button below.</p>
+        <p>${replaceVariables(emailTemplateSettings?.greeting ?? email_template_defaults.greeting, shopData?.details, order)}</p>
+        <p>${replaceVariables(emailTemplateSettings?.body ?? email_template_defaults.body, shopData?.details, order)}</p>
         <div style="text-align: center;">
-          <a href="${download_link}" style="display: inline-block; padding: 10px 20px; font-size: 20px; font-weight: 600; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; margin: 20px;">Download Content</a>
+          <a href="${download_link}" style="display: inline-block; padding: 10px 20px; font-size: 20px; font-weight: 600; background-color: ${
+      emailTemplateSettings?.button_background_color ?? email_template_defaults.button_background_color
+    }; color: ${
+      emailTemplateSettings?.button_text_color ?? email_template_defaults.button_text_color
+    }; text-decoration: none; border-radius: 5px; margin: 20px;">${replaceVariables(
+      emailTemplateSettings?.button_text ?? email_template_defaults.button_text,
+      shopData?.details,
+      order
+    )}</a>
         </div>
-        <p>Your order includes the following products:</p>
+        <p>${replaceVariables(emailTemplateSettings?.product_list_header ?? email_template_defaults.product_list_header, shopData?.details, order)}</p>
         <table style="width: 100%; border-collapse: collapse; margin-bottom:40px; margin-top:20px;">
           ${products
             ?.map(
               (product) => `<tr>
             <td style="width:50px; padding: 10px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;"><img width="50" height="50" src="${
-              product?.image ??
-              "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjwhLS0gVXBsb2FkZWQgdG86IFNWRyBSZXBvLCB3d3cuc3ZncmVwby5jb20sIEdlbmVyYXRvcjogU1ZHIFJlcG8gTWl4ZXIgVG9vbHMgLS0+Cjxzdmcgd2lkdGg9IjgwMHB4IiBoZWlnaHQ9IjgwMHB4IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQogICAgPHBhdGggZD0ibSA0IDEgYyAtMS42NDQ1MzEgMCAtMyAxLjM1NTQ2OSAtMyAzIHYgMSBoIDEgdiAtMSBjIDAgLTEuMTA5Mzc1IDAuODkwNjI1IC0yIDIgLTIgaCAxIHYgLTEgeiBtIDIgMCB2IDEgaCA0IHYgLTEgeiBtIDUgMCB2IDEgaCAxIGMgMS4xMDkzNzUgMCAyIDAuODkwNjI1IDIgMiB2IDEgaCAxIHYgLTEgYyAwIC0xLjY0NDUzMSAtMS4zNTU0NjkgLTMgLTMgLTMgeiBtIC01IDQgYyAtMC41NTA3ODEgMCAtMSAwLjQ0OTIxOSAtMSAxIHMgMC40NDkyMTkgMSAxIDEgcyAxIC0wLjQ0OTIxOSAxIC0xIHMgLTAuNDQ5MjE5IC0xIC0xIC0xIHogbSAtNSAxIHYgNCBoIDEgdiAtNCB6IG0gMTMgMCB2IDQgaCAxIHYgLTQgeiBtIC00LjUgMiBsIC0yIDIgbCAtMS41IC0xIGwgLTIgMiB2IDAuNSBjIDAgMC41IDAuNSAwLjUgMC41IDAuNSBoIDcgcyAwLjQ3MjY1NiAtMC4wMzUxNTYgMC41IC0wLjUgdiAtMSB6IG0gLTguNSAzIHYgMSBjIDAgMS42NDQ1MzEgMS4zNTU0NjkgMyAzIDMgaCAxIHYgLTEgaCAtMSBjIC0xLjEwOTM3NSAwIC0yIC0wLjg5MDYyNSAtMiAtMiB2IC0xIHogbSAxMyAwIHYgMSBjIDAgMS4xMDkzNzUgLTAuODkwNjI1IDIgLTIgMiBoIC0xIHYgMSBoIDEgYyAxLjY0NDUzMSAwIDMgLTEuMzU1NDY5IDMgLTMgdiAtMSB6IG0gLTggMyB2IDEgaCA0IHYgLTEgeiBtIDAgMCIgZmlsbD0iIzJlMzQzNCIgZmlsbC1vcGFjaXR5PSIwLjM0OTAyIi8+DQo8L3N2Zz4="
+              product?.image ?? "https://dheghrnohauuyjxoylpc.supabase.co/storage/v1/render/image/public/logo/ee43414f-ff6d-436d-abe4-ec015056a304.png"
             }" style="width: 50px; height: 50px; object-fit: cover;border-radius:8px;" /></td>
             <td style="padding: 10px; font-size:17px; font-weight:600; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">${product?.title}</td>
-            <td style="padding: 10px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">${product?.files?.length ?? 0} file${
-                product?.files?.length !== 1 ? "s" : ""
-              }</td>
+            <td style="padding: 10px 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right;">${
+              product?.files?.length ?? 0
+            } ${replaceVariables(emailTemplateSettings?.files_suffix ?? email_template_defaults.files_suffix, shopData?.details, order, false)}</td>
           </tr>`
             )
             .join("")}
         </table>
-        <p>Thank you,<br>${shop_name} Team</p>
+        <p>${replaceVariables(emailTemplateSettings?.thank_you_text ?? email_template_defaults.thank_you_text, shopData?.details, order)}<br>${replaceVariables(
+      emailTemplateSettings?.thank_you_signature ?? email_template_defaults.thank_you_signature,
+      shopData?.details,
+      order
+    )}</p>
         <hr style="border: 1px solid #ccc; margin: 50px 0 20px 0;" />
-        <p>If you have any questions, please contact us at <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="mailto:${
-          shopData?.details?.email
-        }">${shopData?.details?.email}</a></p>
-        <br/><br/>
-        <p style="text-align: center; font-size: 12px; color: #666;">Powered by <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="https://filejar.com">${
-          process.env.APP_NAME
-        }</a></p>
+        <p>${replaceVariables(emailTemplateSettings?.footer ?? email_template_defaults.footer, shopData?.details, order)}</p>
+        ${
+          emailTemplateSettings?.show_powered_by !== false
+            ? `<br/><br/>
+            <p style="text-align: center; font-size: 12px; color: #666;">Powered by <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="https://filejar.com">${process.env.APP_NAME}</a></p>`
+            : ""
+        }
       </div>
       `;
 

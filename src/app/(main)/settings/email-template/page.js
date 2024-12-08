@@ -28,6 +28,7 @@ import {
 } from "@shopify/polaris";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { email_template_defaults, replaceVariables } from "@/constants/emailTemplateDefaults";
 
 const EmailTemplatePage = () => {
   const [fromName, setFromName] = useState("");
@@ -48,6 +49,7 @@ const EmailTemplatePage = () => {
   const [logoName, setLogoName] = useState(null);
   const [logoLoading, setLogoLoading] = useState(false);
   const [logoSize, setLogoSize] = useState(250);
+  const [filesSuffix, setFilesSuffix] = useState("");
 
   const shopify = useAppBridge();
   const router = useRouter();
@@ -55,25 +57,23 @@ const EmailTemplatePage = () => {
 
   useEffect(() => {
     if (shopDetails) {
-      setFromName(shopDetails.settings?.email_template?.from_name ?? shopDetails?.name ?? "");
-      setFromEmail(shopDetails.settings?.email_template?.from_email ?? shopDetails?.email ?? "");
-      setSubject(shopDetails.settings?.email_template?.subject ?? "Download your content for order #{{order_name}}");
-      setGreeting(shopDetails.settings?.email_template?.greeting ?? "Hello {{customer_first_name}},");
-      setBody(
-        shopDetails.settings?.email_template?.body ??
-          `Thank you for purchasing from ${shopDetails?.name}! You can download your content for order #{{order_name}} using the button below. Your order includes the following products:`
-      );
-      setProductListHeader(shopDetails.settings?.email_template?.product_list_header ?? "Your order includes the following products:");
-      setThankYouText(shopDetails.settings?.email_template?.thank_you_text ?? "Thank you,");
-      setThankYouSignature(shopDetails.settings?.email_template?.thank_you_signature ?? `${shopDetails?.name} Team`);
-      setFooter(shopDetails.settings?.email_template?.footer ?? `If you have any questions, please contact us at ${shopDetails?.email}`);
-      setShowPoweredBy(shopDetails.settings?.email_template?.show_powered_by ?? true);
-      setButtonText(shopDetails.settings?.email_template?.button_text ?? "Download Content");
-      setButtonBackgroundColor(shopDetails.settings?.email_template?.button_background_color ?? "#000");
-      setButtonTextColor(shopDetails.settings?.email_template?.button_text_color ?? "#fff");
+      setFromName(shopDetails.settings?.email_template?.from_name ?? shopDetails?.name);
+      setFromEmail(shopDetails.settings?.email_template?.from_email ?? shopDetails?.email);
+      setSubject(shopDetails.settings?.email_template?.subject ?? email_template_defaults.subject);
+      setGreeting(shopDetails.settings?.email_template?.greeting ?? email_template_defaults.greeting);
+      setBody(shopDetails.settings?.email_template?.body ?? email_template_defaults.body);
+      setProductListHeader(shopDetails.settings?.email_template?.product_list_header ?? email_template_defaults.product_list_header);
+      setThankYouText(shopDetails.settings?.email_template?.thank_you_text ?? email_template_defaults.thank_you_text);
+      setThankYouSignature(shopDetails.settings?.email_template?.thank_you_signature ?? email_template_defaults.thank_you_signature);
+      setFooter(shopDetails.settings?.email_template?.footer ?? email_template_defaults.footer);
+      setShowPoweredBy(shopDetails.settings?.email_template?.show_powered_by ?? email_template_defaults.show_powered_by);
+      setButtonText(shopDetails.settings?.email_template?.button_text ?? email_template_defaults.button_text);
+      setButtonBackgroundColor(shopDetails.settings?.email_template?.button_background_color ?? email_template_defaults.button_background_color);
+      setButtonTextColor(shopDetails.settings?.email_template?.button_text_color ?? email_template_defaults.button_text_color);
       setLogoName(shopDetails.settings?.email_template?.logo ?? null);
       setLogoSize(shopDetails.settings?.email_template?.logo_size ?? 250);
       setLogoLink(shopDetails.settings?.email_template?.logo_link ?? null);
+      setFilesSuffix(shopDetails.settings?.email_template?.files_suffix ?? email_template_defaults.files_suffix);
     }
   }, [shopDetails]);
 
@@ -118,6 +118,7 @@ const EmailTemplatePage = () => {
         logo: logoName,
         logo_size: logoSize,
         logo_link: logoLink,
+        files_suffix: filesSuffix,
       }),
     });
     const data = await response.json();
@@ -130,45 +131,8 @@ const EmailTemplatePage = () => {
     }
   };
 
-  const replaceVariables = (text) => {
-    if (!text) return "";
-
-    const variables = [
-      {
-        variable: "{{order_name}}",
-        value: "1234",
-      },
-      {
-        variable: "{{customer_first_name}}",
-        value: "Jane",
-      },
-      {
-        variable: "{{customer_last_name}}",
-        value: "Doe",
-      },
-      {
-        variable: "{{customer_full_name}}",
-        value: "Jane Doe",
-      },
-      {
-        variable: "{{customer_email}}",
-        value: "jane.doe@example.com",
-      },
-    ];
-
-    variables.forEach((variable) => {
-      text = text.replaceAll(variable.variable, variable.value);
-    });
-
-    //add email links for all emails
-    const email_regex = /\w+@\w+\.\w+/g;
-    text = text.replace(email_regex, (email) => `<a class="email-link" href="mailto:${email}">${email}</a>`);
-
-    return text;
-  };
-
   const renderTextWithLinks = (text) => {
-    return <span dangerouslySetInnerHTML={{ __html: replaceVariables(text) }} />;
+    return <span dangerouslySetInnerHTML={{ __html: replaceVariables(text, shopDetails) }} />;
   };
 
   const openVariablesModal = () => {
@@ -242,12 +206,14 @@ const EmailTemplatePage = () => {
                     value={fromName}
                     onChange={(value) => setFromName(value)}
                     autoComplete="off"
+                    placeholder={email_template_defaults.from_name}
                   />
                   <TextField
                     label="From email"
                     value={fromEmail}
                     onChange={(value) => setFromEmail(value)}
                     autoComplete="off"
+                    placeholder={email_template_defaults.from_email}
                   />
                   <TextField
                     label="Subject"
@@ -258,6 +224,7 @@ const EmailTemplatePage = () => {
                     value={subject}
                     onChange={(value) => setSubject(value)}
                     autoComplete="off"
+                    placeholder={email_template_defaults.subject}
                   />
                 </FormLayout>
               </BlockStack>
@@ -374,6 +341,7 @@ const EmailTemplatePage = () => {
                     value={greeting}
                     onChange={(value) => setGreeting(value)}
                     autoComplete="off"
+                    placeholder={email_template_defaults.greeting}
                   />
                   <TextField
                     label="Body"
@@ -384,32 +352,44 @@ const EmailTemplatePage = () => {
                     value={body}
                     onChange={(value) => setBody(value)}
                     multiline={6}
+                    placeholder={email_template_defaults.body}
                   />
                   <TextField
                     label="Button text"
                     value={buttonText}
                     onChange={(value) => setButtonText(value)}
+                    placeholder={email_template_defaults.button_text}
                   />
                   <TextField
                     label="Product list header"
                     value={productListHeader}
                     onChange={(value) => setProductListHeader(value)}
+                    placeholder={email_template_defaults.product_list_header}
+                  />
+                  <TextField
+                    label="Files suffix"
+                    value={filesSuffix}
+                    onChange={(value) => setFilesSuffix(value)}
+                    placeholder={email_template_defaults.files_suffix}
                   />
                   <TextField
                     label="Thank you text"
                     value={thankYouText}
                     onChange={(value) => setThankYouText(value)}
+                    placeholder={email_template_defaults.thank_you_text}
                   />
                   <TextField
                     label="Thank you signature"
                     value={thankYouSignature}
                     onChange={(value) => setThankYouSignature(value)}
+                    placeholder={email_template_defaults.thank_you_signature}
                   />
                   <TextField
                     label="Footer"
                     value={footer}
                     onChange={(value) => setFooter(value)}
                     multiline={3}
+                    placeholder={email_template_defaults.footer}
                   />
                   <Checkbox
                     checked={showPoweredBy}
@@ -433,6 +413,7 @@ const EmailTemplatePage = () => {
                 paddingBlockStart="600"
                 paddingBlockEnd="600"
                 paddingInline="400"
+                width="100%"
               >
                 <BlockStack
                   gap="600"
@@ -444,13 +425,13 @@ const EmailTemplatePage = () => {
                       as="span"
                       variant="bodyLg"
                     >
-                      <b>From:</b> {fromName} &lt;{fromEmail}&gt;
+                      <b>From:</b> {replaceVariables(fromName, shopDetails, {}, false)} &lt;{replaceVariables(fromEmail, shopDetails, {}, false)}&gt;
                     </Text>
                     <Text
                       as="span"
                       variant="bodyLg"
                     >
-                      <b>Subject:</b> {replaceVariables(subject)}
+                      <b>Subject:</b> {replaceVariables(subject, shopDetails, {}, false)}
                     </Text>
                   </BlockStack>
 
@@ -477,7 +458,7 @@ const EmailTemplatePage = () => {
                       fontWeight="bold"
                       variant="headingLg"
                     >
-                      {fromName}
+                      {replaceVariables(fromName, shopDetails, {}, false)}
                     </Text>
                     <Text
                       as="span"
@@ -491,13 +472,13 @@ const EmailTemplatePage = () => {
                     as="span"
                     variant="bodyLg"
                   >
-                    {replaceVariables(greeting)}
+                    {replaceVariables(greeting, shopDetails)}
                   </Text>
                   <Text
                     as="span"
                     variant="bodyLg"
                   >
-                    {replaceVariables(body)}
+                    {replaceVariables(body, shopDetails)}
                   </Text>
                   <button
                     style={{
@@ -520,7 +501,7 @@ const EmailTemplatePage = () => {
                     as="span"
                     variant="bodyLg"
                   >
-                    {replaceVariables(productListHeader)}
+                    {replaceVariables(productListHeader, shopDetails)}
                   </Text>
                   <hr />
 
@@ -536,9 +517,7 @@ const EmailTemplatePage = () => {
                     <Box width="100%">
                       <SkeletonBodyText lines={2} />
                     </Box>
-                    <Box width="100px">
-                      <SkeletonDisplayText size="small" />
-                    </Box>
+                    <Box width="70px">2 {filesSuffix}</Box>
                   </InlineStack>
 
                   <hr />
@@ -554,9 +533,7 @@ const EmailTemplatePage = () => {
                     <Box width="100%">
                       <SkeletonBodyText lines={2} />
                     </Box>
-                    <Box width="100px">
-                      <SkeletonDisplayText size="small" />
-                    </Box>
+                    <Box width="70px">1 {filesSuffix}</Box>
                   </InlineStack>
 
                   <hr />
@@ -565,9 +542,9 @@ const EmailTemplatePage = () => {
                       as="span"
                       variant="bodyLg"
                     >
-                      {replaceVariables(thankYouText)}
+                      {replaceVariables(thankYouText, shopDetails)}
                       <br />
-                      {replaceVariables(thankYouSignature)}
+                      {replaceVariables(thankYouSignature, shopDetails)}
                     </Text>
                   </Box>
 

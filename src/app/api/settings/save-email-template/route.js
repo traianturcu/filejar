@@ -28,6 +28,7 @@ export const POST = async (request) => {
       logo,
       logo_size,
       logo_link,
+      files_suffix,
     } = await request.json();
 
     const { error } = await supabase
@@ -51,6 +52,7 @@ export const POST = async (request) => {
             logo,
             logo_size,
             logo_link,
+            files_suffix,
           },
         },
       })
