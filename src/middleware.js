@@ -25,7 +25,21 @@ export const middleware = async (request) => {
   const requestHeaders = new Headers(request.headers);
   const adminShops = process.env.ADMIN_SHOPS?.split(",") ?? [];
 
-  if (pathname.startsWith("/api/subscriber")) {
+  if (pathname.startsWith("/api/open")) {
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "*",
+          "Access-Control-Allow-Headers": "*",
+        },
+      });
+    }
+
+    const response = NextResponse.next();
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    return response;
+  } else if (pathname.startsWith("/api/subscriber")) {
     const body = await request.json();
     if (!body) {
       return Response.json(

@@ -32,6 +32,7 @@ export const getShop = async (shop, forced = false) => {
         .from("order")
         .select("*", { count: "exact", head: true })
         .eq("shop", shop)
+        .eq("is_digital", true)
         .gte("created_at", firstDayOfMonth);
 
       orders_usage = count_orders;

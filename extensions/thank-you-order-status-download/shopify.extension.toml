@@ -1,0 +1,19 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "File Jar"
+handle = "filejar-checkout"
+type = "ui_extension"
+
+[extensions.capabilities]
+network_access = true
+
+[[extensions.targeting]]
+module = "./src/ThankYouBlock.jsx"
+target = "purchase.thank-you.block.render"
+export = "thankYouBlock"
+
+[[extensions.targeting]]
+module = "./src/OrderStatusBlock.jsx"
+target = "customer-account.order-status.block.render"
+export = "orderDetailsBlock"
