@@ -23,6 +23,7 @@ const DownloadDetails = () => {
   const [headline, setHeadline] = useState("Digital products");
   const [body, setBody] = useState("Your order contains digital products that can be downloaded using the link below.");
   const [buttonText, setButtonText] = useState("Access downloads");
+  const [showPoweredBy, setShowPoweredBy] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const editor = useExtensionEditor();
@@ -51,6 +52,9 @@ const DownloadDetails = () => {
           if (data.buttonText) {
             setButtonText(data.buttonText);
           }
+          if (data.showPoweredBy) {
+            setShowPoweredBy(data.showPoweredBy);
+          }
           setLoading(false);
         }
       }
@@ -75,20 +79,22 @@ const DownloadDetails = () => {
         >
           <Button>{buttonText}</Button>
         </Link>
-        <BlockStack inlineAlignment="center">
-          <Text
-            size="small"
-            subdued="subdued"
-          >
-            powered by{" "}
-            <Link
-              external
-              to="https://filejar.com"
+        {showPoweredBy && (
+          <BlockStack inlineAlignment="center">
+            <Text
+              size="small"
+              subdued="subdued"
             >
-              FileJar
-            </Link>
-          </Text>
-        </BlockStack>
+              powered by{" "}
+              <Link
+                external
+                to="https://filejar.com"
+              >
+                FileJar
+              </Link>
+            </Text>
+          </BlockStack>
+        )}
       </BlockStack>
     </Card>
   );

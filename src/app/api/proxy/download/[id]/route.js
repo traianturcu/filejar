@@ -22,6 +22,20 @@ export const GET = async (request, { params }) => {
     // get order from supabase
     const { data: order } = await supabase.from("order").select("*").eq("id", id).eq("shop", shop).single();
 
+    if (!order?.order_name) {
+      return new Response(
+        `
+        <div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">We're currently processing your order. Please check back in a minute.</div>
+        `,
+        {
+          headers: {
+            "Content-Type": "application/liquid",
+          },
+          status: 200,
+        }
+      );
+    }
+
     const order_name = order?.order_name ?? "";
     const customer_email = order?.customer_email ?? "";
     const customer_first_name = order?.customer_first_name ?? "";

@@ -19599,6 +19599,7 @@ ${errorInfo.componentStack}`);
     const [headline, setHeadline] = (0, import_react17.useState)("Digital products");
     const [body, setBody] = (0, import_react17.useState)("Your order contains digital products that can be downloaded using the link below.");
     const [buttonText, setButtonText] = (0, import_react17.useState)("Access downloads");
+    const [showPoweredBy, setShowPoweredBy] = (0, import_react17.useState)(false);
     const [loading, setLoading] = (0, import_react17.useState)(true);
     const editor = useExtensionEditor();
     const { orderConfirmation, checkoutToken, shop } = useApi();
@@ -19610,7 +19611,7 @@ ${errorInfo.componentStack}`);
           const order_id = order.id.replace(/gid:\/\/shopify\/(Order|OrderIdentity)\//, "");
           const isEditor = (editor == null ? void 0 : editor.type) === "checkout";
           const res = yield fetch(
-            `${"https://app.filejar.com"}/api/open/thank-you-page?order=${order_id}&token=${token}&shop=${shop.myshopifyDomain}&isEditor=${isEditor}`
+            `${"https://filejar.ngrok.dev"}/api/open/thank-you-page?order=${order_id}&token=${token}&shop=${shop.myshopifyDomain}&isEditor=${isEditor}`
           );
           const data = yield res.json();
           if (data.url) {
@@ -19623,6 +19624,9 @@ ${errorInfo.componentStack}`);
             }
             if (data.buttonText) {
               setButtonText(data.buttonText);
+            }
+            if (data.showPoweredBy) {
+              setShowPoweredBy(data.showPoweredBy);
             }
             setLoading(false);
           }
@@ -19651,7 +19655,7 @@ ${errorInfo.componentStack}`);
               children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Button2, { children: buttonText })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { inlineAlignment: "center", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+          showPoweredBy && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { inlineAlignment: "center", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
             Text2,
             {
               size: "small",
@@ -19827,6 +19831,7 @@ ${errorInfo.componentStack}`);
     const [headline, setHeadline] = (0, import_react24.useState)("Digital products");
     const [body, setBody] = (0, import_react24.useState)("Your order contains digital products that can be downloaded using the link below.");
     const [buttonText, setButtonText] = (0, import_react24.useState)("Access downloads");
+    const [showPoweredBy, setShowPoweredBy] = (0, import_react24.useState)(false);
     const [loading, setLoading] = (0, import_react24.useState)(true);
     const editor = useExtensionEditor2();
     const order = useOrder();
@@ -19839,7 +19844,7 @@ ${errorInfo.componentStack}`);
           const order_id = order.id.replace(/gid:\/\/shopify\/(Order|OrderIdentity)\//, "");
           const isEditor = (editor == null ? void 0 : editor.type) === "checkout";
           const res = yield fetch(
-            `${"https://app.filejar.com"}/api/open/thank-you-page?order=${order_id}&shop=${shop.myshopifyDomain}&isEditor=${isEditor}&token=${token}`
+            `${"https://filejar.ngrok.dev"}/api/open/thank-you-page?order=${order_id}&shop=${shop.myshopifyDomain}&isEditor=${isEditor}&token=${token}`
           );
           const data = yield res.json();
           if (data.url) {
@@ -19852,6 +19857,9 @@ ${errorInfo.componentStack}`);
             }
             if (data.buttonText) {
               setButtonText(data.buttonText);
+            }
+            if (data.showPoweredBy) {
+              setShowPoweredBy(data.showPoweredBy);
             }
             setLoading(false);
           }
@@ -19874,7 +19882,7 @@ ${errorInfo.componentStack}`);
           children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Button2, { children: buttonText })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(BlockStack2, { inlineAlignment: "center", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+      showPoweredBy && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(BlockStack2, { inlineAlignment: "center", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
         Text2,
         {
           size: "small",
