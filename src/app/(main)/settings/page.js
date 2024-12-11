@@ -23,17 +23,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 const SettingsPage = () => {
-  const [selectedOption, setSelectedOption] = useState(["email"]);
-
-  // get search params
+  const [selectedOption, setSelectedOption] = useState([]);
   const searchParams = useSearchParams();
-  const selection = searchParams.get("selection");
 
   useEffect(() => {
+    const selection = searchParams.get("selection");
     if (selection) {
       setSelectedOption([selection]);
     }
-  }, [selection]);
+  }, [searchParams]);
 
   const { shopDetails } = useShopDetails();
   const router = useRouter();
@@ -106,6 +104,20 @@ const SettingsPage = () => {
           </Card>
         </Layout.Section>
         <Layout.Section>
+          {!selectedOption?.[0] && (
+            <Box
+              padding="400"
+              width="100%"
+            >
+              <BlockStack
+                gap="400"
+                align="center"
+                inlineAlign="center"
+              >
+                <Spinner size="large" />
+              </BlockStack>
+            </Box>
+          )}
           {selectedOption?.[0] === "email" && (
             <BlockStack gap="200">
               <Card roundedAbove="sm">
