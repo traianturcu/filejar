@@ -124,7 +124,7 @@ const EmailTemplatePage = () => {
     const data = await response.json();
     if (data.success) {
       shopify.toast.show(data.message);
-      router.push("/settings");
+      router.push("/settings?selection=email");
       await refetchShopDetails();
     } else {
       shopify.toast.show(data.message);
@@ -188,7 +188,7 @@ const EmailTemplatePage = () => {
       title="Email Template"
       backAction={{
         content: "Settings",
-        url: "/settings",
+        url: "/settings?selection=email",
       }}
       primaryAction={{
         content: "Save",
@@ -394,7 +394,7 @@ const EmailTemplatePage = () => {
                   <Checkbox
                     checked={showPoweredBy}
                     onChange={() => setShowPoweredBy(!showPoweredBy)}
-                    label={`Show ${process.env.NEXT_PUBLIC_APP_NAME} Watermark`}
+                    label={`Show ${process.env.NEXT_PUBLIC_APP_NAME} watermark`}
                   />
                 </FormLayout>
               </BlockStack>

@@ -19,6 +19,9 @@ export const GET = async (request, { params }) => {
       throw new Error("Shop header is missing");
     }
 
+    // get settings
+    const { data: shopData } = await supabase.from("shop").select("*").eq("id", shop).single();
+
     // get order from supabase
     const { data: order } = await supabase.from("order").select("*").eq("id", id).eq("shop", shop).single();
 
@@ -119,7 +122,9 @@ export const GET = async (request, { params }) => {
             <p class="product-file-size">${formatFileSize(file_size)}</p>
           </div>
           <div class="product-file-download">
-            <a class="download-button" href="${`${file_data.signedUrl}${encodeURIComponent(file_name)}`}">Download</a>
+            <a class="download-button" href="${`${file_data.signedUrl}${encodeURIComponent(file_name)}`}">${
+          shopData?.settings?.download_page_template?.button_text ?? "Download"
+        }</a>
           </div>
         </div>
         `;
@@ -139,6 +144,16 @@ export const GET = async (request, { params }) => {
       `;
     }
 
+    const powered_by = `
+    <p class="powered-by">Powered by
+      <a href="https://filejar.com" target="_blank">FileJar</a>
+    </p>
+    `;
+
+    const message =
+      shopData?.settings?.download_page_template?.message ?? "Thank you for purchasing from our store! You can download your files using the buttons below.";
+    const order_prefix = shopData?.settings?.download_page_template?.order_prefix ?? "ORDER #";
+
     const template = readFileSync(join(process.cwd(), "src/app/api/proxy/download/template.liquid"), "utf-8");
 
     const templateVariables = {
@@ -149,6 +164,11 @@ export const GET = async (request, { params }) => {
       "##customer_name##": `${customer_first_name} ${customer_last_name}`,
       "##order_date##": order_date,
       "##products##": products_html,
+      "##powered_by##": shopData?.settings?.download_page_template?.show_powered_by ? powered_by : "",
+      "##message##": message,
+      "##order_prefix##": order_prefix,
+      "##button_background_color##": shopData?.settings?.download_page_template?.button_background_color ?? "#000",
+      "##button_text_color##": shopData?.settings?.download_page_template?.button_text_color ?? "#fff",
       // Add more variables as needed
     };
 

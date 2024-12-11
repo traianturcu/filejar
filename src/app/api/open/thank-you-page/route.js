@@ -113,7 +113,7 @@ export const GET = async (request) => {
 
     const is_digital = count > 0;
 
-    if (!is_digital) {
+    if (!is_digital && !isEditor) {
       return Response.json(
         {
           success: false,

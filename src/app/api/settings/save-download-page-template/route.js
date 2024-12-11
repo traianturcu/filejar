@@ -11,25 +11,7 @@ export const POST = async (request) => {
       throw new Error("Missing shop");
     }
 
-    const {
-      from_name,
-      from_email,
-      subject,
-      greeting,
-      body,
-      product_list_header,
-      thank_you_text,
-      thank_you_signature,
-      footer,
-      show_powered_by,
-      button_text,
-      button_background_color,
-      button_text_color,
-      logo,
-      logo_size,
-      logo_link,
-      files_suffix,
-    } = await request.json();
+    const { order_prefix, message, show_powered_by, button_text, button_background_color, button_text_color } = await request.json();
 
     const { data: shopData } = await supabase.from("shop").select("settings").eq("id", shop).single();
 
@@ -38,24 +20,13 @@ export const POST = async (request) => {
       .update({
         settings: {
           ...shopData?.settings,
-          email_template: {
-            from_name,
-            from_email,
-            subject,
-            greeting,
-            body,
-            product_list_header,
-            thank_you_text,
-            thank_you_signature,
-            footer,
+          download_page_template: {
+            order_prefix,
+            message,
             show_powered_by,
             button_text,
             button_background_color,
             button_text_color,
-            logo,
-            logo_size,
-            logo_link,
-            files_suffix,
           },
         },
       })
@@ -67,17 +38,17 @@ export const POST = async (request) => {
 
     return Response.json({
       success: true,
-      message: "Successfully saved email template",
+      message: "Successfully saved download page template",
     });
   } catch (error) {
     console.error({
       error,
-      message: "Error: Failed to save email template",
+      message: "Error: Failed to save download page template",
     });
     return Response.json(
       {
         success: false,
-        message: "Failed to save email template",
+        message: "Failed to save download page template",
       },
       {
         status: 500,
