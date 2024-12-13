@@ -6,7 +6,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 export const POST = async (request) => {
   try {
     const shop = request?.headers?.get("X-Shop");
-    const { autoFulfill, limitDownloads, limitDownloadTime, selectedProduct, selectedFiles, isEdit, id } = await request.json();
+    const { autoFulfill, limitDownloads, limitDownloadsCount, limitDownloadTime, selectedProduct, selectedFiles, isEdit, id } = await request.json();
 
     if (!shop) {
       throw new Error("Missing shop");
@@ -21,7 +21,7 @@ export const POST = async (request) => {
       const { dataUpdate, errorUpdate } = await supabase
         .from("product")
         .update({
-          settings: { autoFulfill, limitDownloads, limitDownloadTime },
+          settings: { autoFulfill, limitDownloads, limitDownloadTime, limitDownloadsCount },
           files: selectedFiles,
         })
         .eq("shop", shop)

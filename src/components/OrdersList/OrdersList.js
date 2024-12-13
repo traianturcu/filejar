@@ -312,7 +312,7 @@ const OrdersList = () => {
       <IndexTable
         selectable={false}
         resourceName={resourceName}
-        itemCount={totalOrders}
+        itemCount={items?.length}
         headings={[{ title: "Order" }, { title: "Customer" }, { title: "Email" }, { title: "Date" }, { title: "Total" }, { title: "Actions" }]}
         emptyState={emptyStateMarkup}
         loading={loading}

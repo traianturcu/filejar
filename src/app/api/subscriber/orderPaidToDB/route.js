@@ -11,12 +11,16 @@ export const POST = async (req) => {
       throw new Error("Shop or order not found");
     }
 
-    const { data: existingOrder } = await supabase.from("order").select("events, downloads, custom_files, access, status").eq("order_id", order.id).single();
+    const { data: existingOrder } = await supabase
+      .from("order")
+      .select("events, downloads, custom_files, access_enabled, status")
+      .eq("order_id", order.id)
+      .single();
 
     const events = existingOrder?.events ?? [];
     const downloads = existingOrder?.downloads ?? [];
     const custom_files = existingOrder?.custom_files ?? [];
-    const access = existingOrder?.access ?? true;
+    const access_enabled = existingOrder?.access_enabled ?? true;
     const status = existingOrder?.status ?? null;
 
     const created_at = order.created_at ? new Date(order.created_at).toISOString() : null;
@@ -65,7 +69,7 @@ export const POST = async (req) => {
         custom_files,
         products,
         note,
-        access,
+        access_enabled,
         details: order,
         currency,
         total,

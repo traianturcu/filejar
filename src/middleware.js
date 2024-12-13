@@ -4,7 +4,7 @@ import { getAuthenticatedShop } from "@/lib/auth";
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge|api/proxy).*)",
+      source: "/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/billing/confirm-charge|api/proxy|api/download).*)",
       missing: [
         {
           type: "header",

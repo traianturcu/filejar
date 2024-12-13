@@ -22,11 +22,14 @@ const UsageCard = () => {
   const usedStorage = shopDetails?.usage?.storage_usage && shopDetails?.usage?.storage_usage !== "" ? Number(shopDetails?.usage?.storage_usage) : 0;
   const usedFiles = shopDetails?.usage?.files_usage && shopDetails?.usage?.files_usage !== "" ? Number(shopDetails?.usage?.files_usage) : 0;
   const usedOrders = shopDetails?.usage?.orders_usage && shopDetails?.usage?.orders_usage !== "" ? Number(shopDetails?.usage?.orders_usage) : 0;
+  const bandwidth = shopDetails?.bandwidth ?? 0;
 
   const totalProducts = planOffers?.total_products && planOffers?.total_products !== "" ? Number(planOffers?.total_products) : billingPlan?.totalProducts ?? 0;
   const totalStorage = planOffers?.total_storage && planOffers?.total_storage !== "" ? Number(planOffers?.total_storage) : billingPlan?.totalStorage ?? 0;
   const totalFiles = planOffers?.total_files && planOffers?.total_files !== "" ? Number(planOffers?.total_files) : billingPlan?.totalFiles ?? 0;
   const totalOrders = planOffers?.total_orders && planOffers?.total_orders !== "" ? Number(planOffers?.total_orders) : billingPlan?.totalOrders ?? 0;
+  const totalBandwidth =
+    planOffers?.total_bandwidth && planOffers?.total_bandwidth !== "" ? Number(planOffers?.total_bandwidth) : billingPlan?.totalBandwidth ?? 0;
 
   const productsProgress = totalProducts > 0 ? (usedProducts / totalProducts) * 100 : 0;
   const productsTone = productsProgress > 80 ? "critical" : "primary";
@@ -169,6 +172,39 @@ const UsageCard = () => {
                     variant="bodyXs"
                   >
                     {loading ? "..." : `${formatFileSize(usedStorage, 2, "")} / ${totalStorage === -1 ? "∞" : formatFileSize(totalStorage, 2, "")}`}
+                  </Text>
+                </BlockStack>
+              </Grid.Cell>
+            </Grid>
+          </Card>
+          <Card roundedAbove="sm">
+            <Grid
+              gap="400"
+              columns={{ xs: 1, sm: 3, md: 4, lg: 4, xl: 4 }}
+            >
+              <Grid.Cell columnSpan={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 1 }}>
+                <Text
+                  as="h5"
+                  variant="bodyMd"
+                >
+                  Bandwidth
+                </Text>
+              </Grid.Cell>
+              <Grid.Cell columnSpan={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3 }}>
+                <BlockStack
+                  gap="100"
+                  inlineAlign="end"
+                >
+                  <ProgressBar
+                    size="small"
+                    tone={storageTone}
+                    progress={storageProgress}
+                  />
+                  <Text
+                    as="p"
+                    variant="bodyXs"
+                  >
+                    {loading ? "..." : `${formatFileSize(bandwidth, 2, "")} / ${totalBandwidth === -1 ? "∞" : formatFileSize(totalBandwidth, 2, "")}`}
                   </Text>
                 </BlockStack>
               </Grid.Cell>

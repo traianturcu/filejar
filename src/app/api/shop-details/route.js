@@ -41,6 +41,7 @@ export const GET = async (request) => {
     details.usage = data.usage;
     details.last_usage_check = data.last_usage_check;
     details.settings = data.settings;
+    details.bandwidth = data.bandwidth;
 
     return Response.json({
       success: true,

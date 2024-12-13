@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Layout, Text, Card, BlockStack, Badge, InlineStack, Button, FormLayout, Checkbox, Box, Banner } from "@shopify/polaris";
+import { Page, Layout, Text, Card, BlockStack, Badge, InlineStack, Button, FormLayout, Checkbox, Box, Banner, TextField } from "@shopify/polaris";
 import { FileIcon, UploadIcon, ArchiveIcon, StatusActiveIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { useParams, useRouter } from "next/navigation";
 import { Modal, TitleBar, useAppBridge } from "@shopify/app-bridge-react";
@@ -14,8 +14,6 @@ const ProductEditPage = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [autoFulfill, setAutoFulfill] = useState(true);
-  const [limitDownloads, setLimitDownloads] = useState(false);
-  const [limitDownloadTime, setLimitDownloadTime] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showProductExistsBanner, setShowProductExistsBanner] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,8 +41,6 @@ const ProductEditPage = () => {
           active: product.active,
         });
         setAutoFulfill(product?.settings?.autoFulfill ?? true);
-        setLimitDownloads(product?.settings?.limitDownloads ?? false);
-        setLimitDownloadTime(product?.settings?.limitDownloadTime ?? false);
         setSelectedFiles(product?.files ?? []);
       }
     };
@@ -152,7 +148,7 @@ const ProductEditPage = () => {
     setSaving(true);
     const res = await fetch("/api/products/save", {
       method: "POST",
-      body: JSON.stringify({ autoFulfill, limitDownloads, limitDownloadTime, selectedProduct, selectedFiles, isEdit: true, id }),
+      body: JSON.stringify({ autoFulfill, selectedProduct, selectedFiles, isEdit: true, id }),
     });
     const { success, code, error } = await res.json();
     if (!success && code === "product_already_exists") {
@@ -389,18 +385,6 @@ const ProductEditPage = () => {
                       helpText={`Automatically fulfill the product when a customer buys it (you need to also uncheck "This is a physical product" under Shipping settings of the product for this to work).`}
                       checked={autoFulfill}
                       onChange={() => setAutoFulfill(!autoFulfill)}
-                    />
-                    <Checkbox
-                      label="Limit the number of downloads"
-                      helpText="Limit the number of times a customer can download each file. This is useful for protecting your files from unauthorized use."
-                      checked={limitDownloads}
-                      onChange={() => setLimitDownloads(!limitDownloads)}
-                    />
-                    <Checkbox
-                      label="Limit download time"
-                      helpText="Limit the amount of time a customer has to download the file. This is useful for protecting your files from unauthorized use."
-                      checked={limitDownloadTime}
-                      onChange={() => setLimitDownloadTime(!limitDownloadTime)}
                     />
                   </FormLayout>
                 </BlockStack>

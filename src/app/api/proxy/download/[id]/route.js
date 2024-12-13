@@ -8,6 +8,12 @@ export const revalidate = 0;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+const replaceEmail = (text) => {
+  const email_regex = /\w+@\w+\.\w+/g;
+  text = text.replace(email_regex, (email) => `<a class="email-link" href="mailto:${email}">${email}</a>`);
+  return text;
+};
+
 export const GET = async (request, { params }) => {
   try {
     const { id } = params;
@@ -45,24 +51,19 @@ export const GET = async (request, { params }) => {
     const customer_last_name = order?.customer_last_name ?? "";
     const order_date = order?.created_at ? new Date(order.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
     const products = order?.products ?? [];
+    let access_count = order?.access_count ?? 0;
 
     let products_html = ``;
 
-    if (order?.fraud_risk === "high") {
-      return new Response(
-        `<div style="text-align: center; font-size: 24px; font-weight: bold; margin: 40px;">This order has been marked as high risk and cannot be accessed.<br /> For further details, please contact us.</div>`,
-        {
-          headers: {
-            "Content-Type": "application/liquid",
-          },
-          status: 200,
-        }
-      );
-    }
+    console.log({ access_enabled: order?.access_enabled });
 
+    // check order access
     if (order?.cancelled_at) {
       return new Response(
-        `<div style="text-align: center; font-size: 24px; font-weight: bold; margin: 40px;">This order has been cancelled and cannot be accessed.<br /> For further details, please contact us.</div>`,
+        `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+          shopData?.settings?.order_protection?.orderCancelledMessage ??
+            `This order has been cancelled and cannot be accessed. Please contact support at ${shopData?.email} for more information.`
+        )}</div>`,
         {
           headers: {
             "Content-Type": "application/liquid",
@@ -70,11 +71,12 @@ export const GET = async (request, { params }) => {
           status: 200,
         }
       );
-    }
-
-    if (order?.access_revoked) {
+    } else if (order?.access_enabled === false) {
       return new Response(
-        `<div style="text-align: center; font-size: 24px; font-weight: bold; margin: 40px;">Your access to this order has been revoked.<br /> For further details, please contact us.</div>`,
+        `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+          shopData?.settings?.order_protection?.manuallyRevokedMessage ??
+            `Your access to this order has been revoked. Please contact support at ${shopData?.email} for more information.`
+        )}</div>`,
         {
           headers: {
             "Content-Type": "application/liquid",
@@ -82,6 +84,84 @@ export const GET = async (request, { params }) => {
           status: 200,
         }
       );
+    } else if (order?.access_enabled !== true) {
+      // fraud risk
+      const fraud_risk = order?.fraud_risk;
+      const risk_levels = shopData?.settings?.order_protection?.riskLevels;
+      if (risk_levels?.includes(fraud_risk)) {
+        return new Response(
+          `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+            shopData?.settings?.order_protection?.fraudRiskMessage ??
+              `Your access to this order has been revoked due to fraud risk. Please contact support at ${shopData?.email} for more information.`
+          )}</div>`,
+          {
+            headers: {
+              "Content-Type": "application/liquid",
+            },
+            status: 200,
+          }
+        );
+      }
+
+      // payment status
+      const payment_status = order?.payment_status;
+      const payment_statuses = shopData?.settings?.order_protection?.paymentStatus;
+      if (payment_statuses?.includes(payment_status)) {
+        return new Response(
+          `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+            shopData?.settings?.order_protection?.paymentStatusMessage ??
+              `You can't access this order because the payment hasn't been completed yet. Please contact support at ${shopData?.email} for more information.`
+          )}</div>`,
+          {
+            headers: {
+              "Content-Type": "application/liquid",
+            },
+            status: 200,
+          }
+        );
+      }
+
+      // time limit
+      if (shopData?.settings?.order_protection?.limitTime?.[0] === "limited") {
+        const time_limit = parseInt(shopData?.settings?.order_protection?.downloadDays) || 0;
+        const order_date = new Date(order?.created_at);
+        const current_date = new Date();
+        const time_difference = Math.floor((current_date - order_date) / (1000 * 60 * 60 * 24));
+        if (time_difference > time_limit) {
+          return new Response(
+            `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+              shopData?.settings?.order_protection?.timeLimitMessage ??
+                `You can't access this order because the order was placed too long ago. Please contact support at ${shopData?.email} for more information.`
+            )}</div>`,
+            {
+              headers: {
+                "Content-Type": "application/liquid",
+              },
+              status: 200,
+            }
+          );
+        }
+      }
+
+      // number of access attempts
+      if (shopData?.settings?.order_protection?.limitDownloads?.[0] === "limited") {
+        const download_limit = parseInt(shopData?.settings?.order_protection?.downloadLimit) || 0;
+        const access_count = order?.access_count ?? 0;
+        if (access_count >= download_limit) {
+          return new Response(
+            `<div style="margin: 50px auto; width: 600px; text-align: center; font-size: 24px; font-weight: bold;">${replaceEmail(
+              shopData?.settings?.order_protection?.downloadLimitMessage ??
+                `You can't access this order because you've reached the maximum access limit. Please contact support at ${shopData?.email} for more information.`
+            )}</div>`,
+            {
+              headers: {
+                "Content-Type": "application/liquid",
+              },
+              status: 200,
+            }
+          );
+        }
+      }
     }
 
     for (const product of products) {
@@ -108,12 +188,27 @@ export const GET = async (request, { params }) => {
 
       let files_html = ``;
 
+      const downloads = [];
+      for (const file of files) {
+        const file_id = file?.id;
+        const order_id = id;
+        downloads.push({
+          file_id,
+          order_id,
+          shop,
+        });
+      }
+      const { data: downloads_data } = await supabase.from("download").insert(downloads).select();
+
       for (const file of files) {
         const file_name = file?.user_metadata?.originalFileName;
         const file_size = file?.metadata?.size;
         const { data: file_data } = await supabase.storage.from("uploads").createSignedUrl(file?.name, 86400, {
           download: true,
         });
+        const file_id = file?.id;
+
+        const download_id = downloads_data?.find((download) => download?.file_id === file_id)?.id;
 
         files_html += `
         <div class="product-file">
@@ -122,7 +217,7 @@ export const GET = async (request, { params }) => {
             <p class="product-file-size">${formatFileSize(file_size)}</p>
           </div>
           <div class="product-file-download">
-            <a class="download-button" href="${`${file_data.signedUrl}${encodeURIComponent(file_name)}`}">${
+            <a class="download-button" href="${`${process.env.APP_URL}/api/download/${download_id}`}">${
           shopData?.settings?.download_page_template?.button_text ?? "Download"
         }</a>
           </div>
@@ -173,6 +268,22 @@ export const GET = async (request, { params }) => {
     };
 
     const compiledTemplate = Object.entries(templateVariables).reduce((result, [placeholder, value]) => result.replace(placeholder, value), template);
+
+    await supabase
+      .from("order")
+      .update({
+        access_count: access_count + 1,
+        access_events: [
+          ...(order?.access_events ?? []),
+          {
+            timestamp: new Date().toISOString(),
+            ip: request.headers.get("x-forwarded-for") ?? request.ip,
+            user_agent: request.headers.get("user-agent"),
+          },
+        ],
+      })
+      .eq("id", id)
+      .eq("shop", shop);
 
     return new Response(compiledTemplate, {
       headers: {

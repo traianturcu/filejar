@@ -1,5 +1,6 @@
 "use client";
 
+import { useShopDetails } from "@/components/ShopDetailsContext";
 import formatDateTime from "@/lib/utils/formatDateTime";
 import formatFileSize from "@/lib/utils/formatFileSize";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -17,9 +18,67 @@ const OrderManagePage = () => {
   const [loading, setLoading] = useState(true);
   const [resendEmailLoading, setResendEmailLoading] = useState(false);
   const [download_link, setDownloadLink] = useState(null);
+  const [toggleAccessLoading, setToggleAccessLoading] = useState(false);
+  const [order_access, setOrderAccess] = useState(true);
+  const [order_access_reason, setOrderAccessReason] = useState(null);
 
   const router = useRouter();
   const shopify = useAppBridge();
+  const { shopDetails } = useShopDetails();
+
+  useEffect(() => {
+    if (order?.cancelled_at) {
+      setOrderAccess(false);
+      setOrderAccessReason("Order cancelled");
+    } else if (order?.access_enabled === false) {
+      setOrderAccess(false);
+      setOrderAccessReason("Manually revoked");
+    } else if (order?.access_enabled === true) {
+      setOrderAccess(true);
+      setOrderAccessReason(null);
+    } else {
+      if (shopDetails?.settings?.order_protection?.enabled === true) {
+        // fraud risk
+        const risk_levels = shopDetails?.settings?.order_protection?.riskLevels;
+        const fraud_risk = order?.fraud_risk;
+        if (risk_levels?.includes(fraud_risk)) {
+          setOrderAccess(false);
+          setOrderAccessReason(`The fraud risk of ${fraud_risk} is above the permitted threshold.`);
+        }
+
+        // payment status
+        const payment_status = order?.payment_status;
+        const payment_statuses = shopDetails?.settings?.order_protection?.paymentStatus;
+        if (payment_statuses?.includes(payment_status)) {
+          setOrderAccess(false);
+          setOrderAccessReason(`The payment status of ${payment_badge_labels[payment_status] ?? payment_status} is not permitted.`);
+        }
+
+        // time limit
+        if (shopDetails?.settings?.order_protection?.limitTime?.[0] === "limited") {
+          const time_limit = parseInt(shopDetails?.settings?.order_protection?.downloadDays) || 0;
+          const order_date = new Date(order?.created_at);
+          const current_date = new Date();
+          const time_difference = Math.floor((current_date - order_date) / (1000 * 60 * 60 * 24));
+          if (time_difference > time_limit) {
+            setOrderAccess(false);
+            setOrderAccessReason(`The order was placed more than ${time_limit} days ago.`);
+          }
+        }
+
+        // number of access attempts
+        // TODO: check number of access attempts
+        if (shopDetails?.settings?.order_protection?.limitDownloads?.[0] === "limited") {
+          const download_limit = parseInt(shopDetails?.settings?.order_protection?.downloadLimit) || 0;
+          const access_count = order?.access_count ?? 0;
+          if (access_count >= download_limit) {
+            setOrderAccess(false);
+            setOrderAccessReason(`The download page has been accessed the maximum allowed of ${download_limit} times.`);
+          }
+        }
+      }
+    }
+  }, [shopDetails, order]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -141,15 +200,35 @@ const OrderManagePage = () => {
     ),
   ];
 
+  const downloads_list =
+    order?.downloads
+      ?.sort((a, b) => new Date(b.download_date) - new Date(a.download_date))
+      ?.map((download) => {
+        return (
+          <>
+            Downloaded on {formatDateTime(download?.download_date)}:<br />
+            <Text
+              variant="bodySm"
+              fontWeight="semibold"
+              as="span"
+            >
+              {download?.original_file_name}
+            </Text>
+          </>
+        );
+      }) ?? [];
+
   const toggleAccess = async () => {
+    setToggleAccessLoading(true);
     const res = await fetch(`/api/orders/toggleAccess?id=${id}`);
     const { success } = await res.json();
     if (success) {
       setOrder({
         ...order,
-        access_revoked: !order?.access_revoked,
+        access_enabled: !order?.access_enabled,
       });
     }
+    setToggleAccessLoading(false);
   };
 
   if (!order || loading) {
@@ -251,6 +330,10 @@ const OrderManagePage = () => {
 
                     const product_name = order_product?.name ?? product?.title;
                     const product_quantity = order_product?.quantity;
+                    const product_settings = products?.find((product) => product?.gid === `gid://shopify/Product/${order_product?.product_id}`)?.settings;
+
+                    const downloads = order?.downloads ?? [];
+                    const downloads_count = order?.downloads_count ?? {};
 
                     const file_names = product?.files;
 
@@ -331,6 +414,8 @@ const OrderManagePage = () => {
                               </InlineStack>
                             </InlineStack>
                             {product_files?.map((file, index) => {
+                              const file_downloads = downloads_count?.[file?.id] ?? 0;
+
                               return (
                                 <InlineStack
                                   key={file.id}
@@ -366,7 +451,7 @@ const OrderManagePage = () => {
                                     align="end"
                                     blockAlign="center"
                                   >
-                                    0 downloads {/* TODO: Add acdownload count */}
+                                    {file_downloads} downloads
                                   </InlineStack>
                                 </InlineStack>
                               );
@@ -395,43 +480,65 @@ const OrderManagePage = () => {
                     variant="bodyLg"
                     fontWeight="bold"
                   >
-                    Customer
+                    Order Access
                   </Text>
-                  {!order?.access_revoked && (
+                  {order_access && (
                     <Badge
                       size="small"
                       tone="success"
+                      progress="complete"
                     >
-                      access enabled
+                      enabled
                     </Badge>
                   )}
-                  {order?.access_revoked && (
+                  {!order_access && (
                     <Badge
                       size="small"
                       tone="critical"
+                      progress="incomplete"
                     >
-                      access revoked
+                      revoked
                     </Badge>
                   )}
                 </InlineStack>
+                {order_access_reason && (
+                  <Text
+                    as="p"
+                    variant="bodySm"
+                  >
+                    <b>Reason for revoked access:</b> {order_access_reason}
+                  </Text>
+                )}
+                {order?.access_events?.map((event, index) => {
+                  return (
+                    <Text
+                      key={index}
+                      as="p"
+                      variant="bodyMd"
+                    >
+                      Download page accessed {event.ip ? `from ${event.ip}` : ""} on {formatDateTime(event.timestamp)}
+                    </Text>
+                  );
+                })}
                 <Text
                   as="p"
                   variant="bodyMd"
                 >
-                  {order?.customer_first_name} {order?.customer_last_name}
-                </Text>
-                <Text
-                  as="p"
-                  variant="bodyMd"
-                >
-                  {order?.customer_email}
+                  Order accessed{" "}
+                  <b>
+                    {order?.access_count}
+                    {shopDetails?.settings?.order_protection?.limitDownloads?.[0] === "limited"
+                      ? ` / ${shopDetails?.settings?.order_protection?.downloadLimit}`
+                      : ""}{" "}
+                  </b>
+                  times.
                 </Text>
                 <InlineStack
                   gap="200"
                   align="end"
                   blockAlign="center"
                 >
-                  {!order?.access_revoked && (
+                  {order_access && (
                     <Button
                       variant="secondary"
                       tone="critical"
@@ -441,11 +548,12 @@ const OrderManagePage = () => {
                       Revoke access
                     </Button>
                   )}
-                  {order?.access_revoked && (
+                  {!order_access && (
                     <Button
                       variant="primary"
                       icon={CheckCircleIcon}
                       onClick={toggleAccess}
+                      loading={toggleAccessLoading}
                     >
                       Enable access
                     </Button>
@@ -455,13 +563,19 @@ const OrderManagePage = () => {
             </Card>
             <Card roundedAbove="sm">
               <BlockStack gap="200">
-                <Text
-                  as="h3"
-                  variant="bodyLg"
-                  fontWeight="bold"
+                <InlineStack
+                  gap="200"
+                  align="space-between"
+                  blockAlign="center"
                 >
-                  Order Status
-                </Text>
+                  <Text
+                    as="h3"
+                    variant="bodyLg"
+                    fontWeight="bold"
+                  >
+                    Order Status
+                  </Text>
+                </InlineStack>
                 {order?.cancelled_at ? (
                   <Badge
                     size="small"
@@ -511,6 +625,35 @@ const OrderManagePage = () => {
                     Low Risk
                   </Badge>
                 )}
+              </BlockStack>
+            </Card>
+            <Card roundedAbove="sm">
+              <BlockStack gap="200">
+                <InlineStack
+                  gap="200"
+                  align="space-between"
+                  blockAlign="center"
+                >
+                  <Text
+                    as="h3"
+                    variant="bodyLg"
+                    fontWeight="bold"
+                  >
+                    Customer
+                  </Text>
+                </InlineStack>
+                <Text
+                  as="p"
+                  variant="bodyMd"
+                >
+                  {order?.customer_first_name} {order?.customer_last_name}
+                </Text>
+                <Text
+                  as="p"
+                  variant="bodyMd"
+                >
+                  {order?.customer_email}
+                </Text>
                 <InlineStack
                   gap="200"
                   align="end"
@@ -565,18 +708,23 @@ const OrderManagePage = () => {
                 >
                   Downloads
                 </Text>
-                {/* TODO: Display download history */}
-                <Button
-                  icon={ResetIcon}
-                  variant="secondary"
-                >
-                  Reset download limits
-                </Button>
+                {downloads_list?.map((download, index) => {
+                  return (
+                    <Text
+                      key={index}
+                      as="p"
+                      variant="bodyMd"
+                    >
+                      {download}
+                    </Text>
+                  );
+                })}
               </BlockStack>
             </Card>
           </BlockStack>
         </Layout.Section>
       </Layout>
+      <Box padding="1200"></Box>
     </Page>
   );
 };

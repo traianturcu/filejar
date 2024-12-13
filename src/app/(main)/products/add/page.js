@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Layout, Text, Card, BlockStack, Badge, InlineStack, Button, FormLayout, Checkbox, Box, Banner } from "@shopify/polaris";
+import { Page, Layout, Text, Card, BlockStack, Badge, InlineStack, Button, FormLayout, Checkbox, Box, Banner, TextField } from "@shopify/polaris";
 import { FileIcon, ProductIcon, UploadIcon } from "@shopify/polaris-icons";
 import { useRouter } from "next/navigation";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -14,8 +14,6 @@ const ProductAddPage = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [autoFulfill, setAutoFulfill] = useState(true);
-  const [limitDownloads, setLimitDownloads] = useState(false);
-  const [limitDownloadTime, setLimitDownloadTime] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showProductExistsBanner, setShowProductExistsBanner] = useState(false);
 
@@ -72,7 +70,7 @@ const ProductAddPage = () => {
     setSaving(true);
     const res = await fetch("/api/products/save", {
       method: "POST",
-      body: JSON.stringify({ autoFulfill, limitDownloads, limitDownloadTime, selectedProduct, selectedFiles, isEdit: false }),
+      body: JSON.stringify({ autoFulfill, selectedProduct, selectedFiles, isEdit: false }),
     });
     const { success, code, error } = await res.json();
     if (!success && code === "product_already_exists") {
@@ -237,21 +235,6 @@ const ProductAddPage = () => {
         </Layout.Section>
         <Layout.Section variant="oneThird">
           <BlockStack gap="400">
-            {/* <Card roundedAbove="sm">
-              <InlineStack
-                gap="200"
-                align="space-between"
-                blockAlign="center"
-              >
-                <Badge
-                  tone="success"
-                  progress="complete"
-                >
-                  Active
-                </Badge>
-                <Button icon={ArchiveIcon}>Archive</Button>
-              </InlineStack>
-            </Card> */}
             <Card roundedAbove="sm">
               <BlockStack gap="200">
                 <Text
@@ -267,18 +250,6 @@ const ProductAddPage = () => {
                     helpText={`Automatically fulfill the product when a customer buys it (you need to also uncheck "This is a physical product" under Shipping settings of the product for this to work).`}
                     checked={autoFulfill}
                     onChange={() => setAutoFulfill(!autoFulfill)}
-                  />
-                  <Checkbox
-                    label="Limit the number of downloads"
-                    helpText="Limit the number of times a customer can download each file. This is useful for protecting your files from unauthorized use."
-                    checked={limitDownloads}
-                    onChange={() => setLimitDownloads(!limitDownloads)}
-                  />
-                  <Checkbox
-                    label="Limit download time"
-                    helpText="Limit the amount of time a customer has to download the file. This is useful for protecting your files from unauthorized use."
-                    checked={limitDownloadTime}
-                    onChange={() => setLimitDownloadTime(!limitDownloadTime)}
                   />
                 </FormLayout>
               </BlockStack>

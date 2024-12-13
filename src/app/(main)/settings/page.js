@@ -1,7 +1,23 @@
 "use client";
 
 import { useShopDetails } from "@/components/ShopDetailsContext";
-import { Page, Layout, Text, Card, BlockStack, InlineStack, Icon, OptionList, Button, FormLayout, TextField, List, Box, Spinner } from "@shopify/polaris";
+import {
+  Page,
+  Layout,
+  Text,
+  Card,
+  BlockStack,
+  InlineStack,
+  Icon,
+  OptionList,
+  Button,
+  FormLayout,
+  TextField,
+  List,
+  Box,
+  Spinner,
+  ChoiceList,
+} from "@shopify/polaris";
 import {
   PageDownIcon,
   EmailIcon,
@@ -17,24 +33,145 @@ import {
   PageClockIcon,
   NotificationIcon,
   ClockIcon,
+  DisabledIcon,
+  ShieldNoneIcon,
+  IdentityCardIcon,
+  MoneyIcon,
+  AlertTriangleIcon,
+  ToggleOnIcon,
+  CalendarTimeIcon,
+  ToggleOffIcon,
+  TextQuoteIcon,
 } from "@shopify/polaris-icons";
 import LockedBanner from "@/components/LockedBanner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import useDebounce from "@/lib/utils/useDebounce";
 
 const SettingsPage = () => {
   const [selectedOption, setSelectedOption] = useState([]);
+  const [selectedRiskLevels, setSelectedRiskLevels] = useState(["high"]);
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState(["pending", "authorized", "refunded"]);
+  const [limitDownloads, setLimitDownloads] = useState(["unlimited"]);
+  const [downloadLimit, setDownloadLimit] = useState(3);
+  const [limitTime, setLimitTime] = useState(["unlimited"]);
+  const [downloadDays, setDownloadDays] = useState(30);
+  const [enableOrderProtection, setEnableOrderProtection] = useState(false);
   const searchParams = useSearchParams();
+  const { shopDetails } = useShopDetails();
+  const [needToSaveOrderProtection, setNeedToSaveOrderProtection] = useState(false);
+  const router = useRouter();
+  const [fraudRiskMessage, setFraudRiskMessage] = useState(null);
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState(null);
+  const [downloadLimitMessage, setDownloadLimitMessage] = useState(null);
+  const [timeLimitMessage, setTimeLimitMessage] = useState(null);
+  const [manuallyRevokedMessage, setManuallyRevokedMessage] = useState(null);
+  const [orderCancelledMessage, setOrderCancelledMessage] = useState(null);
+
+  const debouncedFraudRiskMessage = useDebounce(fraudRiskMessage, 500);
+  const debouncedPaymentStatusMessage = useDebounce(paymentStatusMessage, 500);
+  const debouncedDownloadLimitMessage = useDebounce(downloadLimitMessage, 500);
+  const debouncedTimeLimitMessage = useDebounce(timeLimitMessage, 500);
+  const debouncedManuallyRevokedMessage = useDebounce(manuallyRevokedMessage, 500);
+  const debouncedOrderCancelledMessage = useDebounce(orderCancelledMessage, 500);
 
   useEffect(() => {
     const selection = searchParams.get("selection");
     if (selection) {
       setSelectedOption([selection]);
+    } else {
+      setSelectedOption(["email"]);
     }
   }, [searchParams]);
 
-  const { shopDetails } = useShopDetails();
-  const router = useRouter();
+  useEffect(() => {
+    if (shopDetails) {
+      setEnableOrderProtection(shopDetails?.settings?.order_protection?.enabled ?? false);
+      setSelectedRiskLevels(shopDetails?.settings?.order_protection?.riskLevels ?? ["high"]);
+      setSelectedPaymentStatus(shopDetails?.settings?.order_protection?.paymentStatus ?? ["pending", "authorized", "refunded"]);
+      setLimitDownloads(shopDetails?.settings?.order_protection?.limitDownloads ?? ["unlimited"]);
+      setDownloadLimit(shopDetails?.settings?.order_protection?.downloadLimit ?? 3);
+      setLimitTime(shopDetails?.settings?.order_protection?.limitTime ?? ["unlimited"]);
+      setDownloadDays(shopDetails?.settings?.order_protection?.downloadDays ?? 30);
+      setFraudRiskMessage(
+        shopDetails?.settings?.order_protection?.fraudRiskMessage ??
+          `Your access to this order has been revoked due to fraud risk. Please contact support at ${shopDetails?.email} for more information.`
+      );
+      setPaymentStatusMessage(
+        shopDetails?.settings?.order_protection?.paymentStatusMessage ??
+          `You can't access this order because the payment hasn't been completed yet. Please contact support at ${shopDetails?.email} for more information.`
+      );
+      setDownloadLimitMessage(
+        shopDetails?.settings?.order_protection?.downloadLimitMessage ??
+          `You can't access this order because you've reached the maximum access limit. Please contact support at ${shopDetails?.email} for more information.`
+      );
+      setTimeLimitMessage(
+        shopDetails?.settings?.order_protection?.timeLimitMessage ??
+          `You can't access this order because the order was placed too long ago. Please contact support at ${shopDetails?.email} for more information.`
+      );
+      setManuallyRevokedMessage(
+        shopDetails?.settings?.order_protection?.manuallyRevokedMessage ??
+          `Your access to this order has been revoked. Please contact support at ${shopDetails?.email} for more information.`
+      );
+      setOrderCancelledMessage(
+        shopDetails?.settings?.order_protection?.orderCancelledMessage ??
+          `This order has been cancelled and cannot be accessed. Please contact support at ${shopDetails?.email} for more information.`
+      );
+    }
+  }, [shopDetails]);
+
+  useEffect(() => {
+    const saveOrderProtectionSettings = async () => {
+      const response = await fetch(`/api/settings/save-order-protection`, {
+        method: "POST",
+        body: JSON.stringify({
+          enabled: enableOrderProtection,
+          riskLevels: selectedRiskLevels,
+          paymentStatus: selectedPaymentStatus,
+          limitDownloads: limitDownloads,
+          downloadLimit: downloadLimit,
+          limitTime: limitTime,
+          downloadDays: downloadDays,
+          fraudRiskMessage: debouncedFraudRiskMessage,
+          paymentStatusMessage: debouncedPaymentStatusMessage,
+          downloadLimitMessage: debouncedDownloadLimitMessage,
+          timeLimitMessage: debouncedTimeLimitMessage,
+          manuallyRevokedMessage: debouncedManuallyRevokedMessage,
+          orderCancelledMessage: debouncedOrderCancelledMessage,
+        }),
+      });
+      if (response.ok) {
+        shopify.toast.show("Order protection settings saved successfully");
+      } else {
+        shopify.toast.show("Failed to save order protection settings");
+      }
+    };
+
+    const runEffect = async () => {
+      await saveOrderProtectionSettings();
+    };
+
+    if (
+      needToSaveOrderProtection ||
+      debouncedDownloadLimitMessage ||
+      debouncedTimeLimitMessage ||
+      debouncedPaymentStatusMessage ||
+      debouncedFraudRiskMessage ||
+      debouncedManuallyRevokedMessage ||
+      debouncedOrderCancelledMessage
+    ) {
+      runEffect();
+      setNeedToSaveOrderProtection(false);
+    }
+  }, [
+    needToSaveOrderProtection,
+    debouncedDownloadLimitMessage,
+    debouncedTimeLimitMessage,
+    debouncedPaymentStatusMessage,
+    debouncedFraudRiskMessage,
+    debouncedManuallyRevokedMessage,
+    debouncedOrderCancelledMessage,
+  ]);
 
   const customizeEmailTemplate = () => {
     router.push("/settings/email-template");
@@ -74,9 +211,9 @@ const SettingsPage = () => {
                     media: <Icon source={PageHeartIcon} />,
                   },
                   {
-                    label: "Order Delivery",
-                    value: "order-delivery",
-                    media: <Icon source={OrderFulfilledIcon} />,
+                    label: "Order Protection",
+                    value: "order-protection",
+                    media: <Icon source={ShieldCheckMarkIcon} />,
                   },
                   {
                     label: "Private SMTP Server",
@@ -84,14 +221,9 @@ const SettingsPage = () => {
                     media: <Icon source={DatabaseIcon} />,
                   },
                   {
-                    label: "Protect PDFs",
-                    value: "protect-pdfs",
-                    media: <Icon source={ShieldCheckMarkIcon} />,
-                  },
-                  {
-                    label: "Download Limits",
-                    value: "download-limits",
-                    media: <Icon source={PageClockIcon} />,
+                    label: "Watermark PDFs",
+                    value: "watermark-pdfs",
+                    media: <Icon source={IdentityCardIcon} />,
                   },
                   {
                     label: "Notifications",
@@ -417,8 +549,349 @@ const SettingsPage = () => {
               )}
             </BlockStack>
           )}
+          {selectedOption?.[0] === "order-protection" && (
+            <BlockStack gap="200">
+              {shopDetails?.billing_plan === "free" && <LockedBanner />}
+              <Card roundedAbove="sm">
+                <BlockStack
+                  gap="200"
+                  align="start"
+                  inlineAlign="space-between"
+                >
+                  <InlineStack
+                    gap="200"
+                    align="space-between"
+                    blockAlign="center"
+                  >
+                    <InlineStack
+                      gap="100"
+                      align="center"
+                      blockAlign="center"
+                    >
+                      <Icon source={ShieldCheckMarkIcon} />
+                      <Text
+                        variant="bodyLg"
+                        fontWeight="bold"
+                        as="h3"
+                      >
+                        Order Protection
+                      </Text>
+                    </InlineStack>
+                    {!enableOrderProtection && (
+                      <Button
+                        variant="primary"
+                        icon={ToggleOnIcon}
+                        onClick={() => {
+                          setEnableOrderProtection(true);
+                          setNeedToSaveOrderProtection(true);
+                        }}
+                        size="medium"
+                        disabled={shopDetails?.billing_plan === "free"}
+                      >
+                        Enable
+                      </Button>
+                    )}
+                    {enableOrderProtection && (
+                      <InlineStack
+                        gap="200"
+                        align="end"
+                        blockAlign="center"
+                      >
+                        <Button
+                          variant="secondary"
+                          icon={ToggleOffIcon}
+                          onClick={() => {
+                            setEnableOrderProtection(false);
+                            setNeedToSaveOrderProtection(true);
+                          }}
+                          size="medium"
+                        >
+                          Disable
+                        </Button>
+                      </InlineStack>
+                    )}
+                  </InlineStack>
+                  <Text variant="bodyMd">
+                    To protect your files from being downloaded by unauthorized users, you can block access based on any of the automatic conditions below.
+                    Access can be manually overridden for each order/customer.
+                  </Text>
+                </BlockStack>
+              </Card>
+              {enableOrderProtection && (
+                <>
+                  <Card roundedAbove="sm">
+                    <BlockStack
+                      gap="200"
+                      align="start"
+                      inlineAlign="space-between"
+                    >
+                      <InlineStack
+                        gap="200"
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <InlineStack
+                          gap="100"
+                          align="center"
+                          blockAlign="center"
+                        >
+                          <Icon source={AlertTriangleIcon} />
+                          <Text
+                            variant="bodyLg"
+                            fontWeight="bold"
+                            as="h3"
+                          >
+                            Fraud Risk
+                          </Text>
+                        </InlineStack>
+                      </InlineStack>
+                      <ChoiceList
+                        allowMultiple
+                        title="Block access if the risk level is:"
+                        choices={[
+                          { label: "High", value: "high" },
+                          { label: "Medium", value: "medium" },
+                        ]}
+                        selected={selectedRiskLevels}
+                        onChange={(value) => {
+                          setSelectedRiskLevels(value);
+                          setNeedToSaveOrderProtection(true);
+                        }}
+                      />
+                      <TextField
+                        label="Message"
+                        placeholder={`Your access to this order has been revoked due to fraud risk. Please contact support at ${shopDetails?.email} for more information.`}
+                        value={fraudRiskMessage}
+                        onChange={(value) => {
+                          setFraudRiskMessage(value);
+                        }}
+                      />
+                    </BlockStack>
+                  </Card>
+                  <Card roundedAbove="sm">
+                    <BlockStack
+                      gap="200"
+                      align="start"
+                      inlineAlign="space-between"
+                    >
+                      <InlineStack
+                        gap="200"
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <InlineStack
+                          gap="100"
+                          align="center"
+                          blockAlign="center"
+                        >
+                          <Icon source={MoneyIcon} />
+                          <Text
+                            variant="bodyLg"
+                            fontWeight="bold"
+                            as="h3"
+                          >
+                            Payment Status
+                          </Text>
+                        </InlineStack>
+                      </InlineStack>
+                      <ChoiceList
+                        allowMultiple
+                        title="Block access if the payment status is:"
+                        choices={[
+                          { label: "Pending", value: "pending" },
+                          { label: "Authorized", value: "authorized" },
+                          { label: "Refunded", value: "refunded" },
+                          { label: "Partially Paid", value: "partially_paid" },
+                        ]}
+                        selected={selectedPaymentStatus}
+                        onChange={(value) => {
+                          setSelectedPaymentStatus(value);
+                          setNeedToSaveOrderProtection(true);
+                        }}
+                      />
+                      <TextField
+                        label="Message"
+                        placeholder={`You can't access this order because the payment hasn't been completed yet. Please contact support at ${shopDetails?.email} for more information.`}
+                        value={paymentStatusMessage}
+                        onChange={(value) => {
+                          setPaymentStatusMessage(value);
+                        }}
+                      />
+                    </BlockStack>
+                  </Card>
+                  <Card roundedAbove="sm">
+                    <BlockStack
+                      gap="200"
+                      align="start"
+                      inlineAlign="space-between"
+                    >
+                      <InlineStack
+                        gap="200"
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <InlineStack
+                          gap="100"
+                          align="center"
+                          blockAlign="center"
+                        >
+                          <Icon source={PageDownIcon} />
+                          <Text
+                            variant="bodyLg"
+                            fontWeight="bold"
+                            as="h3"
+                          >
+                            Download Limit
+                          </Text>
+                        </InlineStack>
+                      </InlineStack>
+                      <ChoiceList
+                        choices={[
+                          { label: "Allow customers to access the download page unlimited times", value: "unlimited" },
+                          { label: "Limit the number of times customers can access the download page", value: "limited" },
+                        ]}
+                        selected={limitDownloads}
+                        onChange={(value) => {
+                          setLimitDownloads(value);
+                          setNeedToSaveOrderProtection(true);
+                        }}
+                      />
+                      {limitDownloads?.[0] === "limited" && (
+                        <>
+                          <TextField
+                            suffix="times"
+                            type="number"
+                            value={downloadLimit}
+                            onChange={(value) => {
+                              setDownloadLimit(value);
+                              setNeedToSaveOrderProtection(true);
+                            }}
+                          />
+                          <TextField
+                            label="Message"
+                            placeholder={`You can't access this order because you've reached the maximum access limit. Please contact support at ${shopDetails?.email} for more information.`}
+                            value={downloadLimitMessage}
+                            onChange={(value) => {
+                              setDownloadLimitMessage(value);
+                            }}
+                          />
+                        </>
+                      )}
+                    </BlockStack>
+                  </Card>
+                  <Card roundedAbove="sm">
+                    <BlockStack
+                      gap="200"
+                      align="start"
+                      inlineAlign="space-between"
+                    >
+                      <InlineStack
+                        gap="200"
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <InlineStack
+                          gap="100"
+                          align="center"
+                          blockAlign="center"
+                        >
+                          <Icon source={CalendarTimeIcon} />
+                          <Text
+                            variant="bodyLg"
+                            fontWeight="bold"
+                            as="h3"
+                          >
+                            Download Time
+                          </Text>
+                        </InlineStack>
+                      </InlineStack>
+                      <ChoiceList
+                        choices={[
+                          { label: "Allow customers to access the download page at any time", value: "unlimited" },
+                          { label: "Only allow access to the download page for a specific amount of time", value: "limited" },
+                        ]}
+                        selected={limitTime}
+                        onChange={(value) => {
+                          setLimitTime(value);
+                          setNeedToSaveOrderProtection(true);
+                        }}
+                      />
+                      {limitTime?.[0] === "limited" && (
+                        <>
+                          <TextField
+                            suffix="days"
+                            type="number"
+                            value={downloadDays}
+                            onChange={(value) => {
+                              setDownloadDays(value);
+                              setNeedToSaveOrderProtection(true);
+                            }}
+                          />
+                          <TextField
+                            label="Message"
+                            placeholder={`You can't access this order because the order was placed too long ago. Please contact support at ${shopDetails?.email} for more information.`}
+                            value={timeLimitMessage}
+                            onChange={(value) => {
+                              setTimeLimitMessage(value);
+                            }}
+                          />
+                        </>
+                      )}
+                    </BlockStack>
+                  </Card>
+                  <Card roundedAbove="sm">
+                    <BlockStack
+                      gap="200"
+                      align="start"
+                      inlineAlign="space-between"
+                    >
+                      <InlineStack
+                        gap="200"
+                        align="space-between"
+                        blockAlign="center"
+                      >
+                        <InlineStack
+                          gap="100"
+                          align="center"
+                          blockAlign="center"
+                        >
+                          <Icon source={TextQuoteIcon} />
+                          <Text
+                            variant="bodyLg"
+                            fontWeight="bold"
+                            as="h3"
+                          >
+                            Other Messages
+                          </Text>
+                        </InlineStack>
+                      </InlineStack>
+
+                      <TextField
+                        label="Manually revoked access"
+                        placeholder={`Your access to this order has been revoked. Please contact support at ${shopDetails?.email} for more information.`}
+                        value={manuallyRevokedMessage}
+                        onChange={(value) => {
+                          setManuallyRevokedMessage(value);
+                        }}
+                      />
+
+                      <TextField
+                        label="Order cancelled"
+                        placeholder={`This order has been cancelled and cannot be accessed. Please contact support at ${shopDetails?.email} for more information.`}
+                        value={orderCancelledMessage}
+                        onChange={(value) => {
+                          setOrderCancelledMessage(value);
+                        }}
+                      />
+                    </BlockStack>
+                  </Card>
+                </>
+              )}
+            </BlockStack>
+          )}
         </Layout.Section>
       </Layout>
+      <Box padding="1200"></Box>
     </Page>
   );
 };

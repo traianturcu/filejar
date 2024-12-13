@@ -5,12 +5,16 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 export const handleOrderUpdated = async (shop, order) => {
   try {
-    const { data: existingOrder } = await supabase.from("order").select("events, downloads, custom_files, access, status").eq("order_id", order.id).single();
+    const { data: existingOrder } = await supabase
+      .from("order")
+      .select("events, downloads, custom_files, access_enabled, status")
+      .eq("order_id", order.id)
+      .single();
 
     const events = existingOrder?.events ?? [];
     const downloads = existingOrder?.downloads ?? [];
     const custom_files = existingOrder?.custom_files ?? [];
-    const access = existingOrder?.access ?? true;
+    const access_enabled = existingOrder?.access_enabled ?? true;
     const status = existingOrder?.status ?? null;
 
     const created_at = order.created_at;
@@ -59,7 +63,7 @@ export const handleOrderUpdated = async (shop, order) => {
         custom_files,
         products,
         note,
-        access,
+        access_enabled,
         details: order,
         currency,
         total,

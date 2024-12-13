@@ -18,12 +18,12 @@ export const GET = async (request) => {
 
     const { data: order } = await supabase.from("order").select("*").eq("order_id", id).eq("shop", shop).single();
 
-    const access_revoked = order?.access_revoked;
+    const access_enabled = order?.access_enabled;
 
     const { data, error } = await supabase
       .from("order")
       .update({
-        access_revoked: !access_revoked,
+        access_enabled: !access_enabled,
       })
       .eq("order_id", id)
       .eq("shop", shop);
