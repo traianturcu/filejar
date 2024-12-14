@@ -78,7 +78,7 @@ const OrderManagePage = () => {
         }
       }
     }
-  }, [shopDetails, order]);
+  }, [shopDetails, order, payment_badge_labels]);
 
   useEffect(() => {
     const fetchOrder = async () => {

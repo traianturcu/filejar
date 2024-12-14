@@ -171,6 +171,13 @@ const SettingsPage = () => {
     debouncedFraudRiskMessage,
     debouncedManuallyRevokedMessage,
     debouncedOrderCancelledMessage,
+    enableOrderProtection,
+    selectedRiskLevels,
+    selectedPaymentStatus,
+    limitDownloads,
+    downloadLimit,
+    limitTime,
+    downloadDays,
   ]);
 
   const customizeEmailTemplate = () => {
