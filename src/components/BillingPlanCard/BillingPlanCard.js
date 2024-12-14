@@ -28,7 +28,7 @@ const BillingPlanCard = ({ plan, billing_plan, billing_plan_start, billing_days_
   let discount = null;
   let discountDuration = "(Lifetime)";
   let originalPrice = "";
-  let discountedPrice = `${plan.amount}/month`;
+  let discountedPrice = `$${plan.amount}/month`;
 
   if (offers?.discountAmount) {
     discount = `$${offers.discountAmount}`;
