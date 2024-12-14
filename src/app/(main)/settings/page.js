@@ -45,7 +45,7 @@ import {
 } from "@shopify/polaris-icons";
 import LockedBanner from "@/components/LockedBanner";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import useDebounce from "@/lib/utils/useDebounce";
 
 const SettingsPage = () => {
@@ -123,7 +123,7 @@ const SettingsPage = () => {
     }
   }, [shopDetails]);
 
-  const saveOrderProtectionSettings = async () => {
+  const saveOrderProtectionSettings = useCallback(async () => {
     const response = await fetch(`/api/settings/save-order-protection`, {
       method: "POST",
       body: JSON.stringify({
@@ -147,7 +147,21 @@ const SettingsPage = () => {
     } else {
       shopify.toast.show("Failed to save order protection settings");
     }
-  };
+  }, [
+    enableOrderProtection,
+    selectedRiskLevels,
+    selectedPaymentStatus,
+    limitDownloads,
+    downloadLimit,
+    limitTime,
+    downloadDays,
+    debouncedFraudRiskMessage,
+    debouncedPaymentStatusMessage,
+    debouncedDownloadLimitMessage,
+    debouncedTimeLimitMessage,
+    debouncedManuallyRevokedMessage,
+    debouncedOrderCancelledMessage,
+  ]);
 
   useEffect(() => {
     if (debouncedDownloadLimitMessage && !isInitialLoad) {
@@ -174,11 +188,23 @@ const SettingsPage = () => {
   }, [debouncedFraudRiskMessage, isInitialLoad]);
 
   useEffect(() => {
+    if (debouncedManuallyRevokedMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedManuallyRevokedMessage, isInitialLoad]);
+
+  useEffect(() => {
+    if (debouncedOrderCancelledMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedOrderCancelledMessage, isInitialLoad]);
+
+  useEffect(() => {
     if (isSavingOrderProtection) {
       saveOrderProtectionSettings();
       setIsSavingOrderProtection(false);
     }
-  }, [isSavingOrderProtection]);
+  }, [isSavingOrderProtection, saveOrderProtectionSettings]);
 
   const customizeEmailTemplate = () => {
     router.push("/settings/email-template");
