@@ -59,14 +59,17 @@ const SettingsPage = () => {
   const [enableOrderProtection, setEnableOrderProtection] = useState(false);
   const searchParams = useSearchParams();
   const { shopDetails } = useShopDetails();
-  const [needToSaveOrderProtection, setNeedToSaveOrderProtection] = useState(false);
   const router = useRouter();
+
   const [fraudRiskMessage, setFraudRiskMessage] = useState(null);
   const [paymentStatusMessage, setPaymentStatusMessage] = useState(null);
   const [downloadLimitMessage, setDownloadLimitMessage] = useState(null);
   const [timeLimitMessage, setTimeLimitMessage] = useState(null);
   const [manuallyRevokedMessage, setManuallyRevokedMessage] = useState(null);
   const [orderCancelledMessage, setOrderCancelledMessage] = useState(null);
+
+  const [isSavingOrderProtection, setIsSavingOrderProtection] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const debouncedFraudRiskMessage = useDebounce(fraudRiskMessage, 500);
   const debouncedPaymentStatusMessage = useDebounce(paymentStatusMessage, 500);
@@ -120,65 +123,62 @@ const SettingsPage = () => {
     }
   }, [shopDetails]);
 
-  useEffect(() => {
-    const saveOrderProtectionSettings = async () => {
-      const response = await fetch(`/api/settings/save-order-protection`, {
-        method: "POST",
-        body: JSON.stringify({
-          enabled: enableOrderProtection,
-          riskLevels: selectedRiskLevels,
-          paymentStatus: selectedPaymentStatus,
-          limitDownloads: limitDownloads,
-          downloadLimit: downloadLimit,
-          limitTime: limitTime,
-          downloadDays: downloadDays,
-          fraudRiskMessage: debouncedFraudRiskMessage,
-          paymentStatusMessage: debouncedPaymentStatusMessage,
-          downloadLimitMessage: debouncedDownloadLimitMessage,
-          timeLimitMessage: debouncedTimeLimitMessage,
-          manuallyRevokedMessage: debouncedManuallyRevokedMessage,
-          orderCancelledMessage: debouncedOrderCancelledMessage,
-        }),
-      });
-      if (response.ok) {
-        shopify.toast.show("Order protection settings saved successfully");
-      } else {
-        shopify.toast.show("Failed to save order protection settings");
-      }
-    };
-
-    const runEffect = async () => {
-      await saveOrderProtectionSettings();
-    };
-
-    if (
-      needToSaveOrderProtection ||
-      debouncedDownloadLimitMessage ||
-      debouncedTimeLimitMessage ||
-      debouncedPaymentStatusMessage ||
-      debouncedFraudRiskMessage ||
-      debouncedManuallyRevokedMessage ||
-      debouncedOrderCancelledMessage
-    ) {
-      runEffect();
-      setNeedToSaveOrderProtection(false);
+  const saveOrderProtectionSettings = async () => {
+    const response = await fetch(`/api/settings/save-order-protection`, {
+      method: "POST",
+      body: JSON.stringify({
+        enabled: enableOrderProtection,
+        riskLevels: selectedRiskLevels,
+        paymentStatus: selectedPaymentStatus,
+        limitDownloads: limitDownloads,
+        downloadLimit: downloadLimit,
+        limitTime: limitTime,
+        downloadDays: downloadDays,
+        fraudRiskMessage: debouncedFraudRiskMessage,
+        paymentStatusMessage: debouncedPaymentStatusMessage,
+        downloadLimitMessage: debouncedDownloadLimitMessage,
+        timeLimitMessage: debouncedTimeLimitMessage,
+        manuallyRevokedMessage: debouncedManuallyRevokedMessage,
+        orderCancelledMessage: debouncedOrderCancelledMessage,
+      }),
+    });
+    if (response.ok) {
+      shopify.toast.show("Order protection settings saved successfully");
+    } else {
+      shopify.toast.show("Failed to save order protection settings");
     }
-  }, [
-    needToSaveOrderProtection,
-    debouncedDownloadLimitMessage,
-    debouncedTimeLimitMessage,
-    debouncedPaymentStatusMessage,
-    debouncedFraudRiskMessage,
-    debouncedManuallyRevokedMessage,
-    debouncedOrderCancelledMessage,
-    enableOrderProtection,
-    selectedRiskLevels,
-    selectedPaymentStatus,
-    limitDownloads,
-    downloadLimit,
-    limitTime,
-    downloadDays,
-  ]);
+  };
+
+  useEffect(() => {
+    if (debouncedDownloadLimitMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedDownloadLimitMessage, isInitialLoad]);
+
+  useEffect(() => {
+    if (debouncedTimeLimitMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedTimeLimitMessage, isInitialLoad]);
+
+  useEffect(() => {
+    if (debouncedPaymentStatusMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedPaymentStatusMessage, isInitialLoad]);
+
+  useEffect(() => {
+    if (debouncedFraudRiskMessage && !isInitialLoad) {
+      setIsSavingOrderProtection(true);
+    }
+  }, [debouncedFraudRiskMessage, isInitialLoad]);
+
+  useEffect(() => {
+    if (isSavingOrderProtection) {
+      saveOrderProtectionSettings();
+      setIsSavingOrderProtection(false);
+    }
+  }, [isSavingOrderProtection]);
 
   const customizeEmailTemplate = () => {
     router.push("/settings/email-template");
@@ -590,7 +590,7 @@ const SettingsPage = () => {
                         icon={ToggleOnIcon}
                         onClick={() => {
                           setEnableOrderProtection(true);
-                          setNeedToSaveOrderProtection(true);
+                          setIsSavingOrderProtection(true);
                         }}
                         size="medium"
                         disabled={shopDetails?.billing_plan === "free"}
@@ -609,7 +609,7 @@ const SettingsPage = () => {
                           icon={ToggleOffIcon}
                           onClick={() => {
                             setEnableOrderProtection(false);
-                            setNeedToSaveOrderProtection(true);
+                            setIsSavingOrderProtection(true);
                           }}
                           size="medium"
                         >
@@ -662,7 +662,7 @@ const SettingsPage = () => {
                         selected={selectedRiskLevels}
                         onChange={(value) => {
                           setSelectedRiskLevels(value);
-                          setNeedToSaveOrderProtection(true);
+                          setIsSavingOrderProtection(true);
                         }}
                       />
                       <TextField
@@ -671,6 +671,7 @@ const SettingsPage = () => {
                         value={fraudRiskMessage}
                         onChange={(value) => {
                           setFraudRiskMessage(value);
+                          setIsInitialLoad(false);
                         }}
                       />
                     </BlockStack>
@@ -713,7 +714,7 @@ const SettingsPage = () => {
                         selected={selectedPaymentStatus}
                         onChange={(value) => {
                           setSelectedPaymentStatus(value);
-                          setNeedToSaveOrderProtection(true);
+                          setIsSavingOrderProtection(true);
                         }}
                       />
                       <TextField
@@ -722,6 +723,7 @@ const SettingsPage = () => {
                         value={paymentStatusMessage}
                         onChange={(value) => {
                           setPaymentStatusMessage(value);
+                          setIsInitialLoad(false);
                         }}
                       />
                     </BlockStack>
@@ -760,7 +762,7 @@ const SettingsPage = () => {
                         selected={limitDownloads}
                         onChange={(value) => {
                           setLimitDownloads(value);
-                          setNeedToSaveOrderProtection(true);
+                          setIsSavingOrderProtection(true);
                         }}
                       />
                       {limitDownloads?.[0] === "limited" && (
@@ -771,7 +773,7 @@ const SettingsPage = () => {
                             value={downloadLimit}
                             onChange={(value) => {
                               setDownloadLimit(value);
-                              setNeedToSaveOrderProtection(true);
+                              setIsSavingOrderProtection(true);
                             }}
                           />
                           <TextField
@@ -780,6 +782,7 @@ const SettingsPage = () => {
                             value={downloadLimitMessage}
                             onChange={(value) => {
                               setDownloadLimitMessage(value);
+                              setIsInitialLoad(false);
                             }}
                           />
                         </>
@@ -820,7 +823,7 @@ const SettingsPage = () => {
                         selected={limitTime}
                         onChange={(value) => {
                           setLimitTime(value);
-                          setNeedToSaveOrderProtection(true);
+                          setIsSavingOrderProtection(true);
                         }}
                       />
                       {limitTime?.[0] === "limited" && (
@@ -831,7 +834,7 @@ const SettingsPage = () => {
                             value={downloadDays}
                             onChange={(value) => {
                               setDownloadDays(value);
-                              setNeedToSaveOrderProtection(true);
+                              setIsSavingOrderProtection(true);
                             }}
                           />
                           <TextField
@@ -840,6 +843,7 @@ const SettingsPage = () => {
                             value={timeLimitMessage}
                             onChange={(value) => {
                               setTimeLimitMessage(value);
+                              setIsInitialLoad(false);
                             }}
                           />
                         </>
@@ -879,6 +883,7 @@ const SettingsPage = () => {
                         value={manuallyRevokedMessage}
                         onChange={(value) => {
                           setManuallyRevokedMessage(value);
+                          setIsInitialLoad(false);
                         }}
                       />
 
@@ -888,6 +893,7 @@ const SettingsPage = () => {
                         value={orderCancelledMessage}
                         onChange={(value) => {
                           setOrderCancelledMessage(value);
+                          setIsInitialLoad(false);
                         }}
                       />
                     </BlockStack>
