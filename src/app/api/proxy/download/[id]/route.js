@@ -55,8 +55,6 @@ export const GET = async (request, { params }) => {
 
     let products_html = ``;
 
-    console.log({ access_enabled: order?.access_enabled });
-
     // check order access
     if (order?.cancelled_at) {
       return new Response(

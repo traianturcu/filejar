@@ -14,7 +14,7 @@ export const handleOrderUpdated = async (shop, order) => {
     const events = existingOrder?.events ?? [];
     const downloads = existingOrder?.downloads ?? [];
     const custom_files = existingOrder?.custom_files ?? [];
-    const access_enabled = existingOrder?.access_enabled ?? true;
+    const access_enabled = existingOrder?.access_enabled;
     const status = existingOrder?.status ?? null;
 
     const created_at = order.created_at;
