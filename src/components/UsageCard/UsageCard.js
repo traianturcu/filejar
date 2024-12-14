@@ -43,6 +43,9 @@ const UsageCard = () => {
   const ordersProgress = totalOrders > 0 ? (usedOrders / totalOrders) * 100 : 0;
   const ordersTone = ordersProgress > 80 ? "critical" : "primary";
 
+  const bandwidthProgress = totalBandwidth > 0 ? (bandwidth / totalBandwidth) * 100 : 0;
+  const bandwidthTone = bandwidthProgress > 80 ? "critical" : "primary";
+
   const resetDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -197,8 +200,8 @@ const UsageCard = () => {
                 >
                   <ProgressBar
                     size="small"
-                    tone={storageTone}
-                    progress={storageProgress}
+                    tone={bandwidthTone}
+                    progress={bandwidthProgress}
                   />
                   <Text
                     as="p"
