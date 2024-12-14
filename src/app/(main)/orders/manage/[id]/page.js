@@ -27,6 +27,17 @@ const OrderManagePage = () => {
   const { shopDetails } = useShopDetails();
 
   useEffect(() => {
+    const payment_badge_labels = {
+      pending: "Pending",
+      authorized: "Authorized",
+      partially_paid: "Partially Paid",
+      paid: "Paid",
+      partially_refunded: "Partially Refunded",
+      refunded: "Refunded",
+      voided: "Voided",
+      default: "Unpaid",
+    };
+
     if (order?.cancelled_at) {
       setOrderAccess(false);
       setOrderAccessReason("Order cancelled");
@@ -78,7 +89,7 @@ const OrderManagePage = () => {
         }
       }
     }
-  }, [shopDetails, order, payment_badge_labels]);
+  }, [shopDetails, order]);
 
   useEffect(() => {
     const fetchOrder = async () => {
