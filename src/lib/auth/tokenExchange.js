@@ -1,5 +1,3 @@
-import { track } from "@/lib/segment";
-
 export const tokenExchange = async (shop, sessionToken) => {
   try {
     const url = `https://${shop}/admin/oauth/access_token`;
@@ -26,11 +24,6 @@ export const tokenExchange = async (shop, sessionToken) => {
     }
 
     const { access_token } = await res.json();
-
-    await track({
-      userId: shop,
-      event: "Access Token Acquired",
-    });
 
     return access_token;
   } catch (error) {
