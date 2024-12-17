@@ -22,7 +22,7 @@ export const getShop = async (shop, forced = false) => {
         .from("objects")
         .select("*", { count: "exact" })
         .eq("bucket_id", "uploads")
-        .eq("owner_id", data.uuid);
+        .eq("owner_id", data?.uuid);
 
       files_usage = count_files;
       storage_usage = data_files.reduce((acc, file) => acc + file?.metadata?.size ?? 0, 0);

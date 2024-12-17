@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async ({ to, from_name, subject, html, text }) => {
+export const sendEmail = async ({ to, from_name, subject, html, text, from_email }) => {
   /* OPTION 1: POSTMARK */
   const smtp_host = process.env.POSTMARK_HOST;
   const smtp_user = process.env.POSTMARK_API_TOKEN;
@@ -23,7 +23,7 @@ export const sendEmail = async ({ to, from_name, subject, html, text }) => {
   });
 
   const mailOptions = {
-    from: `"${from_name}" <${smtp_email}>`,
+    from: `"${from_name}" <${from_email ?? smtp_email}>`,
     to,
     subject,
     text,

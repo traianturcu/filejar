@@ -44,7 +44,8 @@ export const GET = async (request) => {
     const order_name = order?.order_name;
     const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${order?.id}`;
 
-    const from_name = replaceVariables(emailTemplateSettings?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false);
+    const from_name = shopData?.sender_name ?? shopData?.name;
+    const from_email = shopData?.sender_verified ? shopData?.sender_email : null;
     const to = customer_email;
     const subject = replaceVariables(emailTemplateSettings?.subject ?? email_template_defaults.subject, shopData?.details, order);
 
@@ -87,7 +88,7 @@ export const GET = async (request) => {
         }
         <table style="width: 100%;border:none;margin-bottom:20px;font-size:18px;font-weight:600;">
           <tr>
-            <td>${replaceVariables(emailTemplateSettings?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false)}</td>
+            <td>${from_name}</td>
             <td align="right">#${order_name}</td>
           </tr>
         </table>
@@ -136,7 +137,7 @@ export const GET = async (request) => {
       </div>
       `;
 
-    await sendEmail({ to, from_name, subject, html, text });
+    await sendEmail({ to, from_name, subject, html, text, from_email });
 
     return Response.json(
       {

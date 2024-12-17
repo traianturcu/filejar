@@ -42,6 +42,10 @@ export const GET = async (request) => {
     details.last_usage_check = data.last_usage_check;
     details.settings = data.settings;
     details.bandwidth = data.bandwidth;
+    details.sender_email = data?.sender_email;
+    details.sender_name = data?.sender_name;
+    details.sender_verified = data?.sender_verified;
+    details.cname_verified = data?.cname_verified;
 
     return Response.json({
       success: true,

@@ -15,8 +15,6 @@ export const POST = async (req) => {
       throw new Error("Shop or order not found");
     }
 
-    console.log({ order });
-
     order.order_name = order.order_number;
     order.customer_first_name = order.customer?.first_name;
     order.customer_last_name = order.customer?.last_name;
@@ -76,7 +74,8 @@ export const POST = async (req) => {
 
     const { data: products } = await supabase.from("product").select("*").eq("shop", shop).overlaps("variants", variant_ids);
 
-    const from_name = replaceVariables(shopData?.settings?.email_template?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false);
+    const from_name = shopData?.sender_name ?? shopData?.name;
+    const from_email = shopData?.sender_verified ? shopData?.sender_email : null;
     const to = customer_email;
     const subject = replaceVariables(shopData?.settings?.email_template?.subject ?? email_template_defaults.subject, shopData?.details, order);
 
@@ -119,7 +118,7 @@ export const POST = async (req) => {
         }
         <table style="width: 100%;border:none;margin-bottom:20px;font-size:18px;font-weight:600;">
           <tr>
-            <td>${replaceVariables(emailTemplateSettings?.from_name ?? email_template_defaults.from_name, shopData?.details, order, false)}</td>
+            <td>${from_name}</td>
             <td align="right">#${order_name}</td>
           </tr>
         </table>
@@ -168,7 +167,7 @@ export const POST = async (req) => {
       </div>
       `;
 
-    await sendEmail({ to, from_name, subject, html, text });
+    await sendEmail({ to, from_name, subject, html, text, from_email });
 
     // fulfill items
     await publish("FULFILL_ITEMS", {

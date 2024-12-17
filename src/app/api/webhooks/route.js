@@ -67,7 +67,7 @@ export const POST = async (request) => {
         success: false,
         message: "Failed to process webhook",
       },
-      { status: 500 }
+      { status: 401 }
     );
   }
 };

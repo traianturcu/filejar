@@ -202,20 +202,6 @@ const EmailTemplatePage = () => {
               <BlockStack gap="200">
                 <FormLayout>
                   <TextField
-                    label="From name"
-                    value={fromName}
-                    onChange={(value) => setFromName(value)}
-                    autoComplete="off"
-                    placeholder={email_template_defaults.from_name}
-                  />
-                  <TextField
-                    label="From email"
-                    value={fromEmail}
-                    onChange={(value) => setFromEmail(value)}
-                    autoComplete="off"
-                    placeholder={email_template_defaults.from_email}
-                  />
-                  <TextField
                     label="Subject"
                     labelAction={{
                       content: "Variables",
@@ -425,12 +411,6 @@ const EmailTemplatePage = () => {
                       as="span"
                       variant="bodyLg"
                     >
-                      <b>From:</b> {replaceVariables(fromName, shopDetails, {}, false)} &lt;{replaceVariables(fromEmail, shopDetails, {}, false)}&gt;
-                    </Text>
-                    <Text
-                      as="span"
-                      variant="bodyLg"
-                    >
                       <b>Subject:</b> {replaceVariables(subject, shopDetails, {}, false)}
                     </Text>
                   </BlockStack>
@@ -458,7 +438,7 @@ const EmailTemplatePage = () => {
                       fontWeight="bold"
                       variant="headingLg"
                     >
-                      {replaceVariables(fromName, shopDetails, {}, false)}
+                      {shopDetails?.sender_name ?? shopDetails?.name}
                     </Text>
                     <Text
                       as="span"

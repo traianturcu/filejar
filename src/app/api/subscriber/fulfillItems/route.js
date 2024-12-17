@@ -144,7 +144,6 @@ export const POST = async (req) => {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error handling fulfillItems", error);
     return Response.json(
       {
         success: false,

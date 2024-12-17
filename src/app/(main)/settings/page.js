@@ -17,6 +17,8 @@ import {
   Box,
   Spinner,
   ChoiceList,
+  Banner,
+  Link,
 } from "@shopify/polaris";
 import {
   PageDownIcon,
@@ -44,6 +46,7 @@ import {
   TextQuoteIcon,
 } from "@shopify/polaris-icons";
 import LockedBanner from "@/components/LockedBanner";
+import EmailSenderSettings from "@/components/EmailSenderSettings";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, useCallback } from "react";
 import useDebounce from "@/lib/utils/useDebounce";
@@ -206,10 +209,6 @@ const SettingsPage = () => {
     }
   }, [isSavingOrderProtection, saveOrderProtectionSettings]);
 
-  const customizeEmailTemplate = () => {
-    router.push("/settings/email-template");
-  };
-
   const customizeDownloadPageTemplate = () => {
     router.push("/settings/download-page-template");
   };
@@ -283,127 +282,7 @@ const SettingsPage = () => {
               </BlockStack>
             </Box>
           )}
-          {selectedOption?.[0] === "email" && (
-            <BlockStack gap="200">
-              <Card roundedAbove="sm">
-                <BlockStack
-                  gap="200"
-                  align="start"
-                  inlineAlign="space-between"
-                >
-                  <InlineStack
-                    gap="200"
-                    align="space-between"
-                    blockAlign="center"
-                  >
-                    <InlineStack
-                      gap="100"
-                      align="center"
-                      blockAlign="center"
-                    >
-                      <Icon source={EmailNewsletterIcon} />
-                      <Text
-                        variant="bodyLg"
-                        fontWeight="bold"
-                        as="h3"
-                      >
-                        Email Template
-                      </Text>
-                    </InlineStack>
-                    <Button
-                      variant="primary"
-                      icon={EditIcon}
-                      onClick={customizeEmailTemplate}
-                    >
-                      Customize
-                    </Button>
-                  </InlineStack>
-                  <Text variant="bodyMd">Customize the email template to match your brand.</Text>
-                </BlockStack>
-              </Card>
-              <Card roundedAbove="sm">
-                <BlockStack
-                  gap="200"
-                  align="start"
-                  inlineAlign="space-between"
-                >
-                  <InlineStack
-                    gap="200"
-                    align="space-between"
-                    blockAlign="center"
-                  >
-                    <InlineStack
-                      gap="100"
-                      align="center"
-                      blockAlign="center"
-                    >
-                      <Icon source={SendIcon} />
-                      <Text
-                        variant="bodyLg"
-                        fontWeight="bold"
-                        as="h3"
-                      >
-                        Email Sender
-                      </Text>
-                    </InlineStack>
-                  </InlineStack>
-                  <FormLayout>
-                    <FormLayout.Group>
-                      <TextField
-                        placeholder={shopDetails?.name}
-                        label="Name"
-                      />
-                      <TextField
-                        placeholder={shopDetails?.email}
-                        label="Email"
-                        readOnly
-                        disabled
-                      />
-                    </FormLayout.Group>
-                  </FormLayout>
-                </BlockStack>
-              </Card>
-              <Card roundedAbove="sm">
-                <BlockStack
-                  gap="200"
-                  align="start"
-                  inlineAlign="space-between"
-                >
-                  <InlineStack
-                    gap="200"
-                    align="space-between"
-                    blockAlign="center"
-                  >
-                    <InlineStack
-                      gap="100"
-                      align="center"
-                      blockAlign="center"
-                    >
-                      <Icon source={RedoIcon} />
-                      <Text
-                        variant="bodyLg"
-                        fontWeight="bold"
-                        as="h3"
-                      >
-                        Reply-To Email
-                      </Text>
-                    </InlineStack>
-                  </InlineStack>
-                  <Text variant="bodyMd">This is the email address where customers will be able to reply to your emails.</Text>
-                  <FormLayout>
-                    <FormLayout.Group>
-                      <TextField
-                        placeholder={shopDetails?.email}
-                        label="Reply-To Email"
-                        readOnly
-                        disabled
-                      />
-                    </FormLayout.Group>
-                  </FormLayout>
-                </BlockStack>
-              </Card>
-            </BlockStack>
-          )}
+          {selectedOption?.[0] === "email" && <EmailSenderSettings />}
           {selectedOption?.[0] === "download-page" && (
             <BlockStack gap="200">
               <Card roundedAbove="sm">
