@@ -238,9 +238,16 @@ export const GET = async (request, { params }) => {
     }
 
     const powered_by = `
-    <p class="powered-by">Powered by
+    <div class="powered-by" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <span>Powered by</span>
+      <img
+        src="https://dheghrnohauuyjxoylpc.supabase.co/storage/v1/object/public/logo/logo.png"
+        width="20px"
+        height="20px"
+        alt="FileJar"
+      />
       <a href="https://filejar.com" target="_blank">FileJar</a>
-    </p>
+    </div>
     `;
 
     const message =

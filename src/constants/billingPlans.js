@@ -15,7 +15,7 @@ export const billingPlans = [
     id: "basic",
     name: "Basic",
     description: "Up your game with more storage, more orders, unlimited products, and more.",
-    benefits: ["25GB of storage", "250 orders every month", "Unlimited figital products", "Unlimited files", "No extra charges"],
+    benefits: ["25GB of storage", "250 orders every month", "Unlimited digital products", "Unlimited files", "No extra charges"],
     amount: 9.99,
     trialDays: 14,
     totalStorage: 26843545600,

@@ -149,8 +149,22 @@ const DownloadPageTemplatePage = () => {
                   />
                   <Checkbox
                     checked={showPoweredBy}
+                    disabled={shopDetails?.billing_plan === "free"}
                     onChange={() => setShowPoweredBy(!showPoweredBy)}
                     label={`Show ${process.env.NEXT_PUBLIC_APP_NAME} watermark`}
+                    helpText={
+                      shopDetails?.billing_plan === "free" && (
+                        <Text variant="bodySm">
+                          <Button
+                            variant="plain"
+                            onClick={() => router.push("/billing")}
+                          >
+                            Upgrade
+                          </Button>{" "}
+                          to unlock this feature.
+                        </Text>
+                      )
+                    }
                   />
                 </FormLayout>
               </BlockStack>
@@ -359,12 +373,23 @@ const DownloadPageTemplatePage = () => {
                     <>
                       <div style={{ height: "1px", backgroundColor: "#e0e0e0", marginBlock: "24px" }} />
                       <Box paddingBlockStart="600">
-                        <Text
-                          as="span"
-                          variant="bodySm"
-                          alignment="center"
+                        <InlineStack
+                          gap="200"
+                          align="center"
                         >
-                          Powered by{" "}
+                          <Text
+                            as="span"
+                            variant="bodySm"
+                            alignment="center"
+                          >
+                            Powered by
+                          </Text>
+                          <img
+                            src="https://dheghrnohauuyjxoylpc.supabase.co/storage/v1/object/public/logo/logo.svg"
+                            width="20px"
+                            height="20px"
+                            alt="FileJar"
+                          />
                           <a
                             className="email-link"
                             target="_blank"
@@ -372,7 +397,7 @@ const DownloadPageTemplatePage = () => {
                           >
                             {process.env.NEXT_PUBLIC_APP_NAME}
                           </a>
-                        </Text>
+                        </InlineStack>
                       </Box>
                     </>
                   )}

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async ({ to, from_name, subject, html, text, from_email }) => {
+export const sendEmail = async ({ to, from_name, subject, html, text, from_email, private_smtp }) => {
   /* OPTION 1: POSTMARK */
   const smtp_host = process.env.POSTMARK_HOST;
   const smtp_user = process.env.POSTMARK_API_TOKEN;
@@ -13,17 +13,19 @@ export const sendEmail = async ({ to, from_name, subject, html, text, from_email
   // const smtp_pass = process.env.SES_PASSWORD;
   // const smtp_email = process.env.SES_EMAIL;
 
+  const has_private_smtp = private_smtp?.username && private_smtp?.password && private_smtp?.host && private_smtp?.email;
+
   const transporter = nodemailer.createTransport({
-    host: smtp_host,
+    host: has_private_smtp ? private_smtp?.host : smtp_host,
     port: 587,
     auth: {
-      user: smtp_user,
-      pass: smtp_pass,
+      user: has_private_smtp ? private_smtp?.username : smtp_user,
+      pass: has_private_smtp ? private_smtp?.password : smtp_pass,
     },
   });
 
   const mailOptions = {
-    from: `"${from_name}" <${from_email ?? smtp_email}>`,
+    from: `"${from_name}" <${has_private_smtp ? private_smtp?.email : from_email ?? smtp_email}>`,
     to,
     subject,
     text,

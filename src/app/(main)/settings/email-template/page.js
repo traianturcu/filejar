@@ -379,8 +379,22 @@ const EmailTemplatePage = () => {
                   />
                   <Checkbox
                     checked={showPoweredBy}
+                    disabled={shopDetails?.billing_plan === "free"}
                     onChange={() => setShowPoweredBy(!showPoweredBy)}
                     label={`Show ${process.env.NEXT_PUBLIC_APP_NAME} watermark`}
+                    helpText={
+                      shopDetails?.billing_plan === "free" && (
+                        <Text variant="bodySm">
+                          <Button
+                            variant="plain"
+                            onClick={() => router.push("/billing")}
+                          >
+                            Upgrade
+                          </Button>{" "}
+                          to unlock this feature.
+                        </Text>
+                      )
+                    }
                   />
                 </FormLayout>
               </BlockStack>
@@ -537,12 +551,23 @@ const EmailTemplatePage = () => {
                   </Text>
                   {showPoweredBy && (
                     <Box paddingBlockStart="1200">
-                      <Text
-                        as="span"
-                        variant="bodySm"
-                        alignment="center"
+                      <InlineStack
+                        gap="200"
+                        align="center"
                       >
-                        Powered by{" "}
+                        <Text
+                          as="span"
+                          variant="bodySm"
+                          alignment="center"
+                        >
+                          Powered by
+                        </Text>
+                        <img
+                          src="https://dheghrnohauuyjxoylpc.supabase.co/storage/v1/object/public/logo/logo.svg"
+                          width="20px"
+                          height="20px"
+                          alt="FileJar"
+                        />
                         <a
                           className="email-link"
                           target="_blank"
@@ -550,7 +575,7 @@ const EmailTemplatePage = () => {
                         >
                           {process.env.NEXT_PUBLIC_APP_NAME}
                         </a>
-                      </Text>
+                      </InlineStack>
                     </Box>
                   )}
                 </BlockStack>

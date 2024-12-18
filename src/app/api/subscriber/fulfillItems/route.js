@@ -149,7 +149,7 @@ export const POST = async (req) => {
         success: false,
         error,
       },
-      { status: 500 }
+      { status: 200 }
     );
   }
 };

@@ -265,7 +265,7 @@ const OrderManagePage = () => {
         <BlockStack
           gap="50"
           align="center"
-          inlineAlign="center"
+          inlineAlign="start"
         >
           <Text
             as="h1"

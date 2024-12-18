@@ -1,11 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 import { usageCheckFrequency } from "@/constants/usage";
 
-export const getShop = async (shop, forced = false) => {
+export const getShop = async (shop, forced = false, update_usage = true) => {
   try {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
     const { data } = await supabase.from("shop").select().eq("id", shop).single();
+
+    if (!update_usage) {
+      return data;
+    }
 
     const tooOld = new Date(Date.now() - usageCheckFrequency).toISOString();
     const last_usage_check = data?.last_usage_check;

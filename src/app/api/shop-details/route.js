@@ -46,6 +46,8 @@ export const GET = async (request) => {
     details.sender_name = data?.sender_name;
     details.sender_verified = data?.sender_verified;
     details.cname_verified = data?.cname_verified;
+    details.email_important = data?.email_important;
+    details.private_smtp = data?.private_smtp;
 
     return Response.json({
       success: true,

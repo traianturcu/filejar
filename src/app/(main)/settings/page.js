@@ -61,7 +61,7 @@ const SettingsPage = () => {
   const [downloadDays, setDownloadDays] = useState(30);
   const [enableOrderProtection, setEnableOrderProtection] = useState(false);
   const searchParams = useSearchParams();
-  const { shopDetails } = useShopDetails();
+  const { shopDetails, refetchShopDetails } = useShopDetails();
   const router = useRouter();
 
   const [fraudRiskMessage, setFraudRiskMessage] = useState(null);
@@ -80,6 +80,17 @@ const SettingsPage = () => {
   const debouncedTimeLimitMessage = useDebounce(timeLimitMessage, 500);
   const debouncedManuallyRevokedMessage = useDebounce(manuallyRevokedMessage, 500);
   const debouncedOrderCancelledMessage = useDebounce(orderCancelledMessage, 500);
+
+  const [importantEmail, setImportantEmail] = useState("");
+  const [isSavingImportantEmail, setIsSavingImportantEmail] = useState(false);
+
+  const [privateSMTP, setPrivateSMTP] = useState({
+    username: "",
+    password: "",
+    host: "",
+    email: "",
+  });
+  const [isSavingPrivateSMTP, setIsSavingPrivateSMTP] = useState(false);
 
   useEffect(() => {
     const selection = searchParams.get("selection");
@@ -123,8 +134,52 @@ const SettingsPage = () => {
         shopDetails?.settings?.order_protection?.orderCancelledMessage ??
           `This order has been cancelled and cannot be accessed. Please contact support at ${shopDetails?.email} for more information.`
       );
+      setImportantEmail(shopDetails?.email_important ?? "");
+      setPrivateSMTP({
+        username: shopDetails?.private_smtp?.username ?? "",
+        password: shopDetails?.private_smtp?.password ?? "",
+        host: shopDetails?.private_smtp?.host ?? "",
+        email: shopDetails?.private_smtp?.email ?? "",
+      });
     }
   }, [shopDetails]);
+
+  const saveImportantEmail = async () => {
+    setIsSavingImportantEmail(true);
+    const response = await fetch(`/api/settings/save-important-email`, {
+      method: "POST",
+      body: JSON.stringify({
+        email: importantEmail,
+      }),
+    });
+    if (response.ok) {
+      shopify.toast.show("Important email saved successfully");
+      await refetchShopDetails();
+    } else {
+      shopify.toast.show("Failed to save important email");
+    }
+    setIsSavingImportantEmail(false);
+  };
+
+  const savePrivateSMTP = async () => {
+    setIsSavingPrivateSMTP(true);
+    const response = await fetch(`/api/settings/save-private-smtp`, {
+      method: "POST",
+      body: JSON.stringify({
+        username: privateSMTP?.username,
+        password: privateSMTP?.password,
+        host: privateSMTP?.host,
+        email: privateSMTP?.email,
+      }),
+    });
+    if (response.ok) {
+      shopify.toast.show("Private SMTP server saved successfully");
+      await refetchShopDetails();
+    } else {
+      shopify.toast.show("Failed to save private SMTP server");
+    }
+    setIsSavingPrivateSMTP(false);
+  };
 
   const saveOrderProtectionSettings = useCallback(async () => {
     const response = await fetch(`/api/settings/save-order-protection`, {
@@ -805,6 +860,146 @@ const SettingsPage = () => {
                   </Card>
                 </>
               )}
+            </BlockStack>
+          )}
+          {selectedOption?.[0] === "private-smtp" && (
+            <BlockStack gap="200">
+              {shopDetails?.billing_plan === "free" && <LockedBanner />}
+              <Card roundedAbove="sm">
+                <BlockStack
+                  gap="200"
+                  align="start"
+                  inlineAlign="space-between"
+                >
+                  <InlineStack
+                    gap="200"
+                    align="space-between"
+                    blockAlign="center"
+                  >
+                    <InlineStack
+                      gap="100"
+                      align="center"
+                      blockAlign="center"
+                    >
+                      <Icon source={DatabaseIcon} />
+                      <Text
+                        variant="bodyLg"
+                        fontWeight="bold"
+                        as="h3"
+                      >
+                        Private SMTP Server
+                      </Text>
+                    </InlineStack>
+                    {shopDetails?.billing_plan !== "free" && (
+                      <Button
+                        variant="primary"
+                        loading={isSavingPrivateSMTP}
+                        onClick={() => {
+                          savePrivateSMTP();
+                        }}
+                        disabled={
+                          privateSMTP?.username === shopDetails?.private_smtp?.username &&
+                          privateSMTP?.password === shopDetails?.private_smtp?.password &&
+                          privateSMTP?.host === shopDetails?.host &&
+                          privateSMTP?.email === shopDetails?.private_smtp?.email
+                        }
+                      >
+                        Save
+                      </Button>
+                    )}
+                  </InlineStack>
+                  <Text variant="bodyMd">
+                    Use your own SMTP server and address to send emails. This is useful if you want to avoid being marked as spam by email providers and improve
+                    delivery rates.
+                  </Text>
+                  {shopDetails?.billing_plan !== "free" && (
+                    <FormLayout>
+                      <TextField
+                        label="Username"
+                        value={privateSMTP?.username}
+                        onChange={(value) => {
+                          setPrivateSMTP({ ...privateSMTP, username: value });
+                        }}
+                      />
+                      <TextField
+                        label="Password"
+                        value={privateSMTP?.password}
+                        onChange={(value) => {
+                          setPrivateSMTP({ ...privateSMTP, password: value });
+                        }}
+                      />
+                      <TextField
+                        label="Host"
+                        value={privateSMTP?.host}
+                        onChange={(value) => {
+                          setPrivateSMTP({ ...privateSMTP, host: value });
+                        }}
+                      />
+                      <TextField
+                        label="Email"
+                        value={privateSMTP?.email}
+                        onChange={(value) => {
+                          setPrivateSMTP({ ...privateSMTP, email: value });
+                        }}
+                      />
+                    </FormLayout>
+                  )}
+                </BlockStack>
+              </Card>
+            </BlockStack>
+          )}
+          {selectedOption?.[0] === "watermark-pdfs" && <BlockStack gap="200">{shopDetails?.billing_plan === "free" && <LockedBanner />}</BlockStack>}
+          {selectedOption?.[0] === "notifications" && (
+            <BlockStack gap="200">
+              <Card roundedAbove="sm">
+                <BlockStack
+                  gap="200"
+                  align="start"
+                  inlineAlign="space-between"
+                >
+                  <InlineStack
+                    gap="200"
+                    align="space-between"
+                    blockAlign="center"
+                  >
+                    <InlineStack
+                      gap="100"
+                      align="center"
+                      blockAlign="center"
+                    >
+                      <Icon source={NotificationIcon} />
+                      <Text
+                        variant="bodyLg"
+                        fontWeight="bold"
+                        as="h3"
+                      >
+                        Important Account Notifications
+                      </Text>
+                    </InlineStack>
+                    <Button
+                      variant="primary"
+                      loading={isSavingImportantEmail}
+                      onClick={() => {
+                        saveImportantEmail();
+                      }}
+                      disabled={importantEmail === shopDetails?.email_important}
+                    >
+                      Save
+                    </Button>
+                  </InlineStack>
+                  <Text variant="bodyMd">
+                    Please enter the best email address to receive important account notifications (e.g. billing, account, new features, breaking changes,
+                    limits being reached, fraudulent order alerts, etc.).
+                  </Text>
+                  <TextField
+                    label="Email"
+                    value={importantEmail}
+                    onChange={(value) => {
+                      setImportantEmail(value);
+                    }}
+                  />
+                </BlockStack>
+              </Card>
             </BlockStack>
           )}
         </Layout.Section>

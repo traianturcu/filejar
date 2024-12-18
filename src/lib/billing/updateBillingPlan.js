@@ -27,6 +27,35 @@ export const updateBillingPlan = async (shop, planId) => {
 
     const { error } = await supabase.from("shop").update({ billing_plan: planId, billing_days_used, billing_plan_start }).eq("id", shop);
 
+    if (planId === "free") {
+      await supabase
+        .from("shop")
+        .update({
+          sender_email: null,
+          sender_name: null,
+          private_smtp: null,
+          sender_verified: false,
+          cname_verified: false,
+          settings: {
+            ...(shopData?.settings ?? {}),
+            thank_you_page_template: null,
+            order_protection: {
+              ...(shopData?.settings?.order_protection ?? {}),
+              enabled: false,
+            },
+            email_template: {
+              ...(shopData?.settings?.email_template ?? {}),
+              show_powered_by: true,
+            },
+            download_page_template: {
+              ...(shopData?.settings?.download_page_template ?? {}),
+              show_powered_by: true,
+            },
+          },
+        })
+        .eq("id", shop);
+    }
+
     if (error) {
       throw new Error(error.message);
     }

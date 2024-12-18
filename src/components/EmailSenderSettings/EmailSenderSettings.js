@@ -19,7 +19,7 @@ import {
   Badge,
 } from "@shopify/polaris";
 import { useShopDetails } from "@/components/ShopDetailsContext";
-import { EmailNewsletterIcon, EditIcon, SendIcon, ShieldCheckMarkIcon, ClipboardIcon } from "@shopify/polaris-icons";
+import { EmailNewsletterIcon, EditIcon, SendIcon, ShieldCheckMarkIcon, ClipboardIcon, PersonLockFilledIcon } from "@shopify/polaris-icons";
 import { useRouter } from "next/navigation";
 import isCommonEmailAddress from "@/lib/utils/isCommonEmailAddress";
 import { Modal, TitleBar } from "@shopify/app-bridge-react";
@@ -157,16 +157,43 @@ const EmailSenderSettings = () => {
                 >
                   Email Sender
                 </Text>
+                {shopDetails?.billing_plan === "free" && (
+                  <Box paddingInlineStart="400">
+                    <Badge
+                      tone="magic"
+                      progress="complete"
+                    >
+                      PAID FEATURE
+                    </Badge>
+                  </Box>
+                )}
               </InlineStack>
-              <Button
-                variant="primary"
-                onClick={saveEmailSender}
-                loading={emailSenderLoading}
-                disabled={shopDetails?.sender_name === senderName && shopDetails?.sender_email === senderEmail}
-              >
-                Save
-              </Button>
+              {shopDetails?.billing_plan === "free" ? (
+                <Button
+                  variant="primary"
+                  icon={PersonLockFilledIcon}
+                  onClick={() => {
+                    router.push("/billing");
+                  }}
+                >
+                  Upgrade
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={saveEmailSender}
+                  loading={emailSenderLoading}
+                  disabled={shopDetails?.sender_name === senderName && shopDetails?.sender_email === senderEmail}
+                >
+                  Save
+                </Button>
+              )}
             </InlineStack>
+            <Text variant="bodyMd">
+              Customize the name and address that emails are sent from to match your brand.
+              <br />
+              By default, emails are sent from <i>{process.env.NEXT_PUBLIC_SENDER_EMAIL}</i>
+            </Text>
             <FormLayout>
               <FormLayout.Group>
                 <TextField
@@ -176,6 +203,7 @@ const EmailSenderSettings = () => {
                   onChange={(value) => {
                     setSenderName(value);
                   }}
+                  disabled={shopDetails?.billing_plan === "free"}
                 />
                 <TextField
                   placeholder={"leave blank to use the default email address"}
@@ -191,6 +219,7 @@ const EmailSenderSettings = () => {
                   onChange={(value) => {
                     setSenderEmail(value);
                   }}
+                  disabled={shopDetails?.billing_plan === "free"}
                 />
               </FormLayout.Group>
             </FormLayout>

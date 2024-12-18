@@ -44,10 +44,11 @@ export const GET = async (request) => {
     const order_name = order?.order_name;
     const download_link = `${shopData?.details?.primaryDomain?.url ?? shopData?.details?.url}/apps/${process.env.APP_HANDLE}/download/${order?.id}`;
 
-    const from_name = shopData?.sender_name ?? shopData?.name;
-    const from_email = shopData?.sender_verified ? shopData?.sender_email : null;
+    const from_name = shopData?.sender_name ?? shopData?.details?.name;
+    const from_email = shopData?.sender_verified && shopData?.billing_plan !== "free" ? shopData?.sender_email : null;
     const to = customer_email;
     const subject = replaceVariables(emailTemplateSettings?.subject ?? email_template_defaults.subject, shopData?.details, order);
+    const private_smtp = shopData?.billing_plan !== "free" ? shopData?.private_smtp : null;
 
     const text = `
       ${replaceVariables(emailTemplateSettings?.greeting ?? email_template_defaults.greeting, shopData?.details, order, false)}
@@ -131,13 +132,31 @@ export const GET = async (request) => {
         ${
           emailTemplateSettings?.show_powered_by !== false
             ? `<br/><br/>
-            <p style="text-align: center; font-size: 12px; color: #666;">Powered by <a style="color: #007bff; text-decoration: none; font-weight: 600;" href="https://filejar.com">${process.env.APP_NAME}</a></p>`
+
+              <table style="margin: 0 auto;">
+                <tr>
+                  <td style="text-align: center; font-size: 12px; color: #666;">Powered by&nbsp;</td>
+                  <td>
+                    <img
+                      src="https://dheghrnohauuyjxoylpc.supabase.co/storage/v1/object/public/logo/logo.png"
+                      width="20"
+                      height="20"
+                      alt="FileJar"
+                      style="vertical-align: middle;"
+                    />
+                  </td>
+                  <td style="padding-left: 8px;">
+                    <a style="color: #007bff; text-decoration: none; font-size: 12px; font-weight: 600;" href="https://filejar.com">${process.env.APP_NAME}</a>
+                  </td>
+                </tr>
+              </table>
+            `
             : ""
         }
       </div>
       `;
 
-    await sendEmail({ to, from_name, subject, html, text, from_email });
+    await sendEmail({ to, from_name, subject, html, text, from_email, private_smtp });
 
     return Response.json(
       {
